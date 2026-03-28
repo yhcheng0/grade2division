@@ -1,212 +1,824 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>🍎 分物練習</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-     
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-     
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+        }
+
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
             color: #3f2a1e;
-            padding: 15px;
-            min-height: 100vh;
+            padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+            min-height: 100%;
+            min-height: 100dvh;
+            touch-action: manipulation;
         }
-     
-        .header { text-align: center; margin-bottom: 15px; }
-        h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); color: #c2410f; }
-     
-        .setup-panel, .result-panel {
-            max-width: 950px; margin: 20px auto; background: white; border-radius: 25px;
-            padding: 35px; box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+
+        body.game-active {
+            overflow: hidden;
+            height: 100dvh;
+            max-height: 100dvh;
+            padding: 0;
         }
-     
-        .section-title { text-align: center; font-size: 1.5rem; color: #854d0e; margin: 25px 0 15px; }
-     
-        .choice-grid { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-bottom: 25px; }
-     
-        .choice-btn {
-            background: white; border: 6px solid #ff9f1c; color: #c2410f;
-            font-size: clamp(1.2rem, 4vw, 1.5rem); font-weight: 700;
-            padding: 18px 30px; border-radius: 25px; cursor: pointer;
-            min-width: 240px; transition: all 0.3s;
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
         }
-        .choice-btn:hover, .choice-btn.active { transform: scale(1.05); background: #ff9f1c; color: white; }
-     
-        .food-select { text-align: center; margin: 25px 0; }
-        .food-option {
-            font-size: clamp(2.6rem, 8vw, 3.8rem); margin: 10px; cursor: pointer;
-            padding: 12px; border-radius: 25px; transition: all 0.3s;
+
+        h1 {
+            font-size: clamp(2.25rem, 6.2vw, 3.35rem);
+            color: #c2410f;
+            line-height: 1.2;
         }
-        .food-option.selected { background: #fefce8; transform: scale(1.2); box-shadow: 0 10px 25px rgba(255,159,28,0.5); }
-     
-        .start-btn {
-            display: block; margin: 30px auto; background: #10b981; color: white;
-            border: none; padding: 16px 55px; font-size: 1.65rem; font-weight: 700;
-            border-radius: 9999px; cursor: pointer; box-shadow: 0 7px 0 #166534;
+
+        .setup-hint {
+            margin-top: 8px;
+            font-size: clamp(0.85rem, 2.2vw, 1rem);
+            color: #78716c;
+            line-height: 1.45;
+            max-width: 36em;
+            margin-left: auto;
+            margin-right: auto;
         }
-     
-        .game-header {
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 10px; margin-bottom: 15px;
-            background: white; padding: 12px 20px; border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
+        .difficulty-hint {
+            text-align: center;
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            color: #78716c;
+            line-height: 1.45;
+            max-width: 40em;
+            margin: 0 auto 12px;
+            min-height: 2.8em;
         }
-     
-        .progress { font-size: clamp(1.2rem, 4vw, 1.45rem); font-weight: 700; color: #854d0e; }
-        .timer {
-            font-size: clamp(1.7rem, 5.5vw, 2.2rem); font-weight: 700;
-            color: #b91c1c; background: #fee2e2; padding: 8px 25px; border-radius: 9999px;
+
+        .setup-panel,
+        .result-panel {
+            max-width: 950px;
+            margin: 12px auto;
+            background: white;
+            border-radius: 20px;
+            padding: clamp(16px, 3vw, 28px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
         }
-     
-        .math-box {
-            background: #fffbeb; border: 5px solid #f59e0b; border-radius: 20px;
-            padding: 18px; text-align: center; font-size: clamp(1.35rem, 4.2vw, 1.7rem);
-            line-height: 1.5; flex: 1;
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(1.1rem, 2.8vw, 1.45rem);
+            color: #854d0e;
+            margin: 16px 0 10px;
         }
-     
-        .main-game {
-            display: flex; gap: 20px; flex-wrap: wrap;
-        }
-     
-        .plates-container {
-            flex: 1; min-width: 300px;
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;
-        }
-     
-        .plate {
-            background: white; border-radius: 18px; padding: 14px 18px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-            display: flex; align-items: center; gap: 14px;
-        }
-     
-        .dropzone {
-            flex: 1; min-height: 110px; background: #fefce8;
-            border: 4px dashed #f59e0b; border-radius: 14px;
-            padding: 12px; display: flex; flex-wrap: wrap; gap: 12px;
+
+        .choice-grid {
+            display: flex;
             justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
         }
-        .dropzone.dragover { background: #ecfccb; border-color: #65a30d; }
-     
-        .count { font-size: 1.75rem; font-weight: 700; color: #15803d; background: #ecfccb; padding: 6px 18px; border-radius: 9999px; }
-     
+
+        .choice-btn {
+            background: white;
+            border: 4px solid #ff9f1c;
+            color: #c2410f;
+            font-size: clamp(1rem, 2.8vw, 1.35rem);
+            font-weight: 700;
+            padding: 14px 22px;
+            border-radius: 18px;
+            cursor: pointer;
+            min-width: min(200px, 42vw);
+            min-height: 48px;
+            transition: all 0.2s;
+        }
+
+        .choice-btn:hover,
+        .choice-btn.active {
+            transform: scale(1.03);
+            background: #ff9f1c;
+            color: white;
+        }
+
+        .food-select {
+            text-align: center;
+            margin: 14px 0;
+        }
+
+        .food-option {
+            font-size: clamp(3.1rem, 10vw, 5.25rem);
+            margin: 6px;
+            cursor: pointer;
+            padding: min(18px, 3vw);
+            min-width: 76px;
+            min-height: 76px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            transition: all 0.2s;
+        }
+
+        .food-option.selected {
+            background: #fefce8;
+            transform: scale(1.12);
+            box-shadow: 0 8px 20px rgba(255, 159, 28, 0.45);
+        }
+
+        .start-btn {
+            display: block;
+            margin: 18px auto;
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+            font-weight: 700;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #166534;
+            min-height: 52px;
+        }
+
+        /* —— 遊戲區：橫向 iPad 一屏為主 —— */
+        .game-shell {
+            flex-direction: column;
+            height: 100dvh;
+            max-height: 100dvh;
+            padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+            gap: 6px;
+            overflow: hidden;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            flex-wrap: wrap;
+            gap: 8px;
+            flex-shrink: 0;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .progress {
+            font-size: clamp(0.85rem, 2vmin, 1.15rem);
+            font-weight: 700;
+            color: #854d0e;
+            display: flex;
+            align-items: center;
+            flex: 0 1 auto;
+            min-width: 0;
+            max-width: 100%;
+            line-height: 1.25;
+        }
+
+        .timer {
+            font-size: clamp(0.9rem, 2.4vmin, 1.35rem);
+            font-weight: 700;
+            color: #b91c1c;
+            background: #fee2e2;
+            padding: 8px 14px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            flex: 0 0 auto;
+            min-height: 44px;
+            max-width: 100%;
+            box-sizing: border-box;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .math-box {
+            background: #fffbeb;
+            border: 3px solid #f59e0b;
+            border-radius: 12px;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: clamp(0.78rem, 2vmin, 1.08rem);
+            line-height: 1.35;
+            flex: 1 1 200px;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            hyphens: auto;
+        }
+
+        .game-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow: hidden;
+        }
+
+        .main-game {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+            min-height: 0;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .plates-container {
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(200px, 28vw), 1fr));
+            gap: 8px;
+            align-content: start;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 2px;
+        }
+
+        .plate {
+            background: white;
+            border-radius: 12px;
+            padding: 8px 10px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .plate-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: #854d0e;
+            flex: 0 0 auto;
+            max-width: 100%;
+        }
+
+        .plate-face {
+            font-size: clamp(1.75rem, 5.4vmin, 2.75rem);
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .plate-label-text {
+            font-size: clamp(1.05rem, 2.95vmin, 1.52rem);
+        }
+
+        .dropzone {
+            flex: 1 1 100px;
+            min-width: 0;
+            min-height: clamp(64px, 14vh, 108px);
+            background: #fefce8;
+            border: 3px dashed #f59e0b;
+            border-radius: 10px;
+            padding: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            align-content: flex-start;
+        }
+
+        .dropzone.dragover {
+            background: #ecfccb;
+            border-color: #65a30d;
+        }
+
+        .count {
+            font-size: clamp(0.9rem, 2.3vmin, 1.25rem);
+            font-weight: 700;
+            color: #15803d;
+            background: #ecfccb;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            flex: 0 0 auto;
+            min-width: 2.25em;
+            text-align: center;
+            box-sizing: border-box;
+            font-variant-numeric: tabular-nums;
+            max-width: 100%;
+        }
+
         .pile-panel {
-            width: 380px; background: white; border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12); padding: 15px;
-            position: sticky; top: 20px; align-self: flex-start;
-            max-height: 85vh; overflow-y: auto;
+            width: clamp(160px, 22vw, 240px);
+            flex-shrink: 0;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            max-height: 100%;
         }
-     
+
+        .pile-header {
+            flex-shrink: 0;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .area-title {
+            font-size: clamp(1.2rem, 3.2vmin, 1.55rem);
+            font-weight: 700;
+            color: #854d0e;
+            text-align: center;
+        }
+
+        .pile-count-badge {
+            font-size: clamp(0.72rem, 1.8vmin, 0.95rem);
+            font-weight: 700;
+            color: #15803d;
+            margin-top: 4px;
+            padding: 4px 8px;
+            background: #ecfccb;
+            border-radius: 9999px;
+            display: inline-block;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-wrap: anywhere;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .game-shell.hide-counts-mode .count,
+        .game-shell.hide-counts-mode .pile-count-badge {
+            display: none !important;
+        }
+
         .pile {
-            min-height: 180px; background: #fefce8; border: 5px dashed #f59e0b;
-            border-radius: 18px; padding: 15px; display: flex;
-            flex-wrap: wrap; gap: 14px; justify-content: center;
+            flex: 1;
+            min-height: 0;
+            background: #fefce8;
+            border: 3px dashed #f59e0b;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            align-content: flex-start;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
         }
-     
+
         .siumai-item {
-            font-size: clamp(2.6rem, 7vw, 50px); cursor: grab; user-select: none;
+            font-size: clamp(2.1rem, 5.5vmin, 3.5rem);
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            line-height: 1;
+            border-radius: 8px;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
         }
-     
+
+        .touch-pick-mode .siumai-item {
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .siumai-item.picked {
+            outline: 3px solid #65a30d;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(101, 163, 13, 0.35);
+            transform: scale(1.08);
+            z-index: 2;
+            position: relative;
+        }
+
+        .move-hint {
+            flex-shrink: 0;
+            margin: 0;
+            padding: 6px 10px;
+            font-size: clamp(1rem, 2.5vmin, 1.15rem);
+            color: #78716c;
+            text-align: center;
+            line-height: 1.35;
+            background: rgba(255, 255, 255, 0.75);
+            border-radius: 10px;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            box-sizing: border-box;
+        }
+
+        .move-hint.move-hint--hidden {
+            display: none;
+            margin: 0;
+            padding: 0;
+            min-height: 0;
+        }
+
         .division-area {
-            background: #fefce8; border: 5px solid #f59e0b; border-radius: 20px;
-            padding: 25px; margin: 20px auto; max-width: 820px; text-align: center;
+            background: #fefce8;
+            border: 3px solid #f59e0b;
+            border-radius: 12px;
+            padding: 8px 10px;
+            margin: 0;
+            max-width: none;
+            text-align: center;
+            flex-shrink: 0;
         }
-     
+
+        .division-formula-hint {
+            font-size: clamp(0.95rem, 2.6vmin, 1.25rem);
+            font-weight: 700;
+            color: #854d0e;
+            line-height: 1.35;
+            margin: 0 0 8px;
+            padding: 0 4px;
+        }
+
         .division-row {
-            display: flex; align-items: center; justify-content: center;
-            flex-wrap: wrap; gap: 18px; margin: 15px 0;
-            font-size: clamp(1.9rem, 5.8vw, 2.45rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 4px 0;
+            font-size: clamp(1.1rem, 3vmin, 1.65rem);
         }
-     
-        .input-container { position: relative; display: inline-block; }
-     
+
+        .simple-share-row {
+            gap: 10px;
+        }
+
+        .simple-share-label {
+            font-weight: 700;
+            color: #854d0e;
+            font-size: clamp(1rem, 2.6vmin, 1.35rem);
+            white-space: nowrap;
+        }
+
+        .simple-share-unit {
+            font-weight: 700;
+            color: #c2410f;
+            font-size: clamp(1.1rem, 2.8vmin, 1.5rem);
+            min-width: 1.5em;
+        }
+
+        .simple-share-connector {
+            font-weight: 700;
+            color: #854d0e;
+            font-size: clamp(0.95rem, 2.5vmin, 1.25rem);
+            white-space: nowrap;
+        }
+
+        .input-container {
+            position: relative;
+            display: inline-block;
+        }
+
         .input-slot {
-            width: 95px; height: 80px; font-size: 2.55rem; text-align: center;
-            line-height: 74px; border: 4px solid #f59e0b; border-radius: 16px;
-            background: white; outline: none;
+            box-sizing: border-box;
+            width: clamp(4.5rem, 20vw, 7rem);
+            min-width: 4.25rem;
+            max-width: 100%;
+            height: clamp(48px, 10vh, 68px);
+            padding: 4px 6px;
+            font-size: clamp(1rem, 2.8vmin, 1.75rem);
+            text-align: center;
+            line-height: 1.1;
+            border: 3px solid #f59e0b;
+            border-radius: 12px;
+            background: white;
+            outline: none;
+            font-variant-numeric: tabular-nums;
         }
-        .input-slot:focus { border-color: #65a30d; box-shadow: 0 0 12px rgba(101, 163, 13, 0.6); }
-     
-        .info-icon {
-            position: absolute; top: -10px; right: -10px; width: 30px; height: 30px;
-            background: #fffbeb; color: #854d0e; border-radius: 50%; font-size: 1.15rem;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15); cursor: help;
+
+        input.input-slot[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
         }
-     
-        .operator { font-size: 2.8rem; font-weight: bold; color: #c2410f; padding: 0 8px; }
-     
+
+        input.input-slot[type="number"]::-webkit-outer-spin-button,
+        input.input-slot[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-slot:focus {
+            border-color: #65a30d;
+            box-shadow: 0 0 10px rgba(101, 163, 13, 0.5);
+        }
+
+        .operator {
+            font-size: clamp(1.25rem, 3.2vmin, 2rem);
+            font-weight: bold;
+            color: #c2410f;
+            padding: 0 4px;
+        }
+
+        .game-actions {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 0;
+        }
+
         .controls {
-            text-align: center; margin: 25px 0;
-            display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;
+            text-align: center;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
         }
-     
+
         button {
-            background: #ff9f1c; color: white; border: none;
-            padding: 14px 34px; font-size: clamp(1.25rem, 4.5vw, 1.55rem);
-            font-weight: 700; border-radius: 9999px; cursor: pointer;
-            box-shadow: 0 6px 0 #c2410f;
+            background: #ff9f1c;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            font-size: clamp(0.95rem, 2.4vmin, 1.25rem);
+            font-weight: 700;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #c2410f;
+            min-height: 48px;
+            min-width: 44px;
         }
-        button:active { transform: translateY(3px); box-shadow: 0 3px 0 #c2410f; }
-        button:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; }
-     
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #c2410f;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
         .feedback {
-            font-size: clamp(1.4rem, 5vw, 1.85rem);
-            padding: 22px 30px; border-radius: 9999px; margin: 20px auto;
-            text-align: center; font-weight: 700; display: none;
+            font-size: clamp(0.85rem, 2.2vmin, 1.15rem);
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin: 0 auto;
+            text-align: center;
+            font-weight: 700;
+            display: none;
+            max-height: clamp(52px, 16vh, 100px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            line-height: 1.35;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .feedback.feedback-expanded {
+            max-height: min(36vh, 240px);
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .next-row {
+            text-align: center;
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .next-row button {
+            min-height: 48px;
+        }
+
+        @media (orientation: landscape) and (max-height: 520px) {
+            .game-shell {
+                gap: 4px;
+            }
+
+            .dropzone {
+                min-height: clamp(52px, 22vh, 88px);
+            }
+
+            .feedback {
+                max-height: clamp(44px, 20vh, 80px);
+                padding: 6px 10px;
+            }
+
+            .feedback.feedback-expanded {
+                max-height: min(42vh, 200px);
+            }
         }
 
         /* Result Panel */
         .result-panel {
             text-align: center;
         }
+
         .score-circle {
-            width: 180px; height: 180px; margin: 20px auto;
-            border-radius: 50%; border: 12px solid #f59e0b;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 3.5rem; font-weight: 700; color: #c2410f;
+            width: 180px;
+            height: 180px;
+            margin: 20px auto;
+            border-radius: 50%;
+            border: 12px solid #f59e0b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #c2410f;
         }
+
         .grade-title {
-            font-size: 2.2rem; margin: 15px 0; color: #854d0e;
+            font-size: 2.2rem;
+            margin: 15px 0;
+            color: #854d0e;
         }
+
         .result-list {
-            text-align: left; max-width: 600px; margin: 30px auto;
-            background: #fffbeb; padding: 20px; border-radius: 20px;
+            text-align: left;
+            max-width: 600px;
+            margin: 30px auto;
+            background: #fffbeb;
+            padding: 20px;
+            border-radius: 20px;
         }
+
         .result-item {
-            padding: 12px 0; border-bottom: 1px solid #fcd34d;
-            display: flex; justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #fcd34d;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        .result-item:last-child { border-bottom: none; }
-        .correct { color: #15803d; }
-        .wrong { color: #b91c1c; }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item-meta {
+            display: block;
+            font-size: 0.88em;
+            font-weight: 600;
+            color: #78716c;
+            margin-top: 4px;
+        }
+
+        .result-dim {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.95em;
+        }
+
+        .correct {
+            color: #15803d;
+        }
+
+        .wrong {
+            color: #b91c1c;
+        }
 
         .tooltip {
-            position: relative; display: inline-block; margin-left: 8px;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden; width: 280px; background: #3f2a1e; color: white;
-            text-align: left; border-radius: 12px; padding: 12px;
-            position: absolute; z-index: 1; bottom: 125%; left: 50%;
-            margin-left: -140px; opacity: 0; transition: opacity 0.3s;
-            font-size: 1rem; line-height: 1.5;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible; opacity: 1;
+            position: relative;
+            display: inline-block;
+            margin-left: 8px;
+            cursor: pointer;
         }
 
-        .footer { text-align: center; margin-top: 40px; color: #854d0e; font-size: 1.1rem; }
+        /* 結果頁評分說明：固定於畫面中央，可捲動，避免被 overflow 裁切 */
+        .result-panel .tooltip .tooltiptext {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: min(400px, calc(100vw - 28px));
+            max-width: calc(100vw - 28px);
+            max-height: min(78vh, 520px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            margin: 0;
+            bottom: auto;
+            z-index: 10000;
+            background: #3f2a1e;
+            color: #fff;
+            text-align: left;
+            border-radius: 14px;
+            padding: 16px 18px;
+            font-size: clamp(0.82rem, 2.1vmin, 1rem);
+            line-height: 1.55;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: opacity 0.2s ease;
+        }
+
+        .result-panel .tooltip:hover .tooltiptext,
+        .result-panel .tooltip:focus-within .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip>span:first-child {
+            outline: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            color: #854d0e;
+            font-size: 1.35rem;
+            line-height: 1.5;
+        }
+
+        body.game-active .footer {
+            display: none;
+        }
+
+        .score-breakdown {
+            font-size: clamp(0.9rem, 2.2vmin, 1.05rem);
+            color: #57534e;
+            margin: 12px auto 0;
+            max-width: 520px;
+            line-height: 1.55;
+        }
+
+        .result-mode-summary {
+            font-size: clamp(0.9rem, 2.4vmin, 1.08rem);
+            color: #44403c;
+            line-height: 1.55;
+            margin: 10px auto 14px;
+            max-width: 520px;
+            padding: 10px 14px;
+            background: #fffbeb;
+            border-radius: 12px;
+            border: 2px solid #fde68a;
+        }
+
+        .result-mode-summary .result-mode-line {
+            margin: 4px 0 0;
+        }
+
+        .result-mode-summary strong {
+            color: #854d0e;
+        }
+
+        .result-panel.compact-landscape {
+            max-height: min(100dvh, 100vh);
+            overflow-y: auto;
+            margin: 8px auto;
+            padding: 16px 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .result-panel .score-circle {
+            width: clamp(120px, 22vmin, 160px);
+            height: clamp(120px, 22vmin, 160px);
+            font-size: clamp(2rem, 6vmin, 2.8rem);
+            border-width: 8px;
+            margin: 12px auto;
+        }
+
+        .result-panel h1 {
+            font-size: clamp(2rem, 5.8vmin, 2.75rem) !important;
+            line-height: 1.25;
+        }
+
+        .result-panel .grade-title {
+            font-size: clamp(1.15rem, 3.5vmin, 1.65rem);
+        }
     </style>
 </head>
+
 <body>
     <!-- Setup Panel -->
     <div id="setupPanel" class="setup-panel">
-        <div class="header"><h1>🍎 分物練習 🍎</h1></div>
-       
+        <div class="header">
+            <h1>🍎 分物練習 🍎</h1>
+            <p class="setup-hint">建議使用<strong>橫向</strong>畫面，遊戲時較少捲動、較好操作。</p>
+        </div>
+
         <div class="section-title">1. 餘數模式</div>
         <div class="choice-grid" id="remainderChoices">
             <button class="choice-btn active" data-remainder="0" onclick="selectRemainder(0)">沒有餘數</button>
@@ -218,12 +830,13 @@
             <button class="choice-btn" data-formula="1" onclick="selectFormula(1)">有除式</button>
         </div>
         <div class="section-title">3. 難度模式</div>
+        <p class="difficulty-hint" id="difficultyHint"></p>
         <div class="choice-grid" id="difficultyChoices">
-            <button class="choice-btn" data-diff="0" onclick="selectDifficulty(0)">簡單 Easy</button>
-            <button class="choice-btn active" data-diff="1" onclick="selectDifficulty(1)">中等 Medium</button>
-            <button class="choice-btn" data-diff="2" onclick="selectDifficulty(2)">困難 Hard</button>
+            <button type="button" class="choice-btn active" data-diff="0" onclick="selectDifficulty(0)">簡單 Easy</button>
+            <button type="button" class="choice-btn" data-diff="1" onclick="selectDifficulty(1)">中等 Medium</button>
+            <button type="button" class="choice-btn" data-diff="2" onclick="selectDifficulty(2)">困難 Hard</button>
         </div>
-     
+
         <div class="food-select">
             <p style="margin-bottom:15px;color:#854d0e;font-size:1.3rem;">4. 選擇要分的食物</p>
             <span class="food-option" data-food="🍎" onclick="selectFood(this)">🍎</span>
@@ -232,79 +845,108 @@
             <span class="food-option" data-food="🥟" onclick="selectFood(this)">🥟</span>
             <span class="food-option" data-food="🍪" onclick="selectFood(this)">🍪</span>
         </div>
-     
+
         <button id="startGameBtn" class="start-btn" onclick="startGame()" disabled>開始遊戲</button>
     </div>
- 
-    <!-- Game Area -->
-    <div id="gameArea" style="display:none;">
-        <!-- ... 遊戲區域保持不變 ... -->
+
+    <!-- Game Area（橫向一屏：主遊戲區可捲動，其餘固定） -->
+    <div id="gameArea" class="game-shell" style="display:none;">
         <div class="game-header">
             <div class="progress">第 <span id="currentQ">1</span> / 5 題</div>
             <div class="timer" id="timer">60 秒</div>
             <div class="math-box" id="questionBox"></div>
         </div>
-     
-        <div class="main-game">
-            <div class="plates-container" id="platesContainer"></div>
-            <div class="pile-panel">
-                <div class="pile-header">
-                    <div class="area-title" id="pileTitle">食物堆</div>
+
+        <p class="move-hint" id="moveHint" aria-live="polite"></p>
+
+        <div class="game-body">
+            <div class="main-game">
+                <div class="plates-container" id="platesContainer"></div>
+                <div class="pile-panel">
+                    <div class="pile-header">
+                        <div class="area-title" id="pileTitle">蘋果</div>
+                        <div class="pile-count-badge" id="pileCountBadge" aria-live="polite">0</div>
+                    </div>
+                    <div id="pile" class="pile"></div>
                 </div>
-                <div id="pile" class="pile" ondrop="dropFood(event)" ondragover="allowDrop(event)"></div>
             </div>
-        </div>
-     
-        <div id="divisionArea" class="division-area" style="display:none;">
-            <!-- division inputs ... (保持原樣) -->
-            <div class="division-row">
-                <div class="input-container">
-                    <input id="totalInput" type="number" min="0" class="input-slot" placeholder="?">
-                    <span class="info-icon" data-tooltip="被除數：物件的總數量">ℹ️</span>
-                </div>
-                <span class="operator">÷</span>
-                <div class="input-container">
-                    <input id="peopleInput" type="number" min="0" class="input-slot" placeholder="?">
-                    <span class="info-icon" data-tooltip="除數：平均分成的份數">ℹ️</span>
-                </div>
-                <span class="operator">=</span>
-                <div class="input-container">
-                    <input id="quotientInput" type="number" min="0" class="input-slot" placeholder="?">
-                    <span class="info-icon" data-tooltip="商：每份數量">ℹ️</span>
-                </div>
-                <div id="remainderPart" style="display:none; align-items:center; gap:12px;">
-                    <span class="operator">......</span>
+
+            <div id="divisionArea" class="division-area" style="display:none;">
+                <div id="divisionFormulaHint" class="division-formula-hint" style="display:none;"></div>
+                <div class="division-row">
                     <div class="input-container">
-                        <input id="remainderInput" type="number" min="0" class="input-slot" placeholder="?">
-                        <span class="info-icon" data-tooltip="餘數">ℹ️</span>
+                        <input id="totalInput" type="number" min="0" inputmode="numeric" class="input-slot"
+                            placeholder="?" autocomplete="off">
+                    </div>
+                    <span class="operator">÷</span>
+                    <div class="input-container">
+                        <input id="peopleInput" type="number" min="0" inputmode="numeric" class="input-slot"
+                            placeholder="?" autocomplete="off">
+                    </div>
+                    <span class="operator">=</span>
+                    <div class="input-container">
+                        <input id="quotientInput" type="number" min="0" inputmode="numeric" class="input-slot"
+                            placeholder="?" autocomplete="off">
+                    </div>
+                    <div id="remainderPart" style="display:none; align-items:center; gap:8px;">
+                        <span class="operator">......</span>
+                        <div class="input-container">
+                            <input id="remainderInput" type="number" min="0" inputmode="numeric" class="input-slot"
+                                placeholder="?" autocomplete="off">
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <div id="simpleShareArea" class="division-area simple-share-area" style="display:none;">
+                <div class="division-row simple-share-row" id="simpleShareRow">
+                    <span id="simpleShareLabelSingle" class="simple-share-label">每人共分得</span>
+                    <span id="simpleShareLabelQuotient" class="simple-share-label" style="display:none;">每人分得</span>
+                    <div class="input-container">
+                        <input id="eachShareInput" type="number" min="0" inputmode="numeric" class="input-slot"
+                            placeholder="?" autocomplete="off" title="每人分到的數量（商）">
+                    </div>
+                    <span id="eachShareUnit" class="simple-share-unit" aria-hidden="true"></span>
+                    <span id="simpleShareRemConnector" class="simple-share-connector" style="display:none;">，還餘</span>
+                    <div id="simpleRemainderInputWrap" class="input-container" style="display:none;">
+                        <input id="simpleRemainderInput" type="number" min="0" inputmode="numeric" class="input-slot"
+                            placeholder="?" autocomplete="off" title="分完後食物堆剩下的數量（餘數）">
+                    </div>
+                    <span id="simpleRemainderUnit" class="simple-share-unit" style="display:none;"
+                        aria-hidden="true"></span>
+                </div>
+            </div>
         </div>
-     
-        <div class="controls">
-            <button id="submitBtn" onclick="submitAnswer()">✅ 提交答案</button>
-            <button id="hintBtn" onclick="showAnswer()" style="background:#64748b; display:none;">📋 展示答案</button>
-            <button id="resetBtn" onclick="resetDistribution()" style="background:#64748b;">🔄 重置分配</button>
-        </div>
-     
-        <div id="feedback" class="feedback"></div>
-     
-        <div style="text-align:center;margin:20px 0;">
-            <button onclick="nextQuestion()" id="nextBtn" style="display:none;background:#10b981;padding:16px 50px;font-size:1.5rem;">
-                下一題 →
-            </button>
+
+        <div class="game-actions">
+            <div class="controls">
+                <button type="button" id="submitBtn" onclick="submitAnswer()">✅ 提交答案</button>
+                <button type="button" id="hintBtn" onclick="showAnswer()" style="background:#64748b; display:none;">📋
+                    展示答案</button>
+                <button type="button" id="resetBtn" onclick="resetDistribution()" style="background:#64748b;">🔄
+                    重置分配</button>
+            </div>
+            <div id="feedback" class="feedback"></div>
+            <div class="next-row">
+                <button type="button" onclick="nextQuestion()" id="nextBtn"
+                    style="display:none;background:#10b981;padding:12px 36px;font-size:clamp(1rem,2.5vmin,1.25rem);">
+                    下一題 →
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Result Panel -->
-    <div id="resultPanel" class="result-panel" style="display:none;">
+    <div id="resultPanel" class="result-panel compact-landscape" style="display:none;">
         <h1 style="color:#c2410f;">🎉 練習完成！</h1>
+        <div id="resultModeSummary" class="result-mode-summary" role="status" aria-label="本局設定"></div>
         <div class="score-circle" id="scoreCircle">100</div>
         <div class="grade-title" id="gradeTitle">分物大師</div>
-        
-        <div style="margin:20px 0;">
+        <div id="scoreBreakdown" class="score-breakdown"></div>
+
+        <div style="margin:12px 0 8px;">
             <strong>總用時：</strong> <span id="totalTime">0</span> 秒
+            <span style="color:#78716c;">（每題上限 <span id="timeCapLabel">60</span> 秒）</span>
         </div>
 
         <div class="result-list">
@@ -316,54 +958,355 @@
             再玩一次
         </button>
     </div>
- 
-    <div class="footer">❤️ 2A班同學加油！</div>
+
+    <div class="footer">❤️ 2A同學加油！</div>
 
     <script>
         // ==================== Config ====================
-        const QUESTION_SETS = { /* 保持不變 */ 
-            0: {0: [{total:6,people:2},{total:8,people:2},{total:9,people:3},{total:10,people:2},{total:12,people:3}],
-                1: [{total:7,people:2},{total:11,people:3},{total:13,people:3},{total:14,people:4},{total:17,people:4}]},
-            1: {0: [{total:8,people:2},{total:12,people:3},{total:16,people:4},{total:15,people:3},{total:20,people:4}],
-                1: [{total:11,people:3},{total:14,people:3},{total:17,people:4},{total:19,people:4},{total:22,people:3}]},
-            2: {0: [{total:24,people:4},{total:28,people:4},{total:30,people:5},{total:36,people:6},{total:25,people:5}],
-                1: [{total:26,people:4},{total:29,people:5},{total:31,people:4},{total:35,people:6},{total:37,people:5}]}
+        /** 簡單：60 秒。中等：45 秒。困難：35 秒。 */
+        const DIFFICULTY_CONFIG = {
+            0: { time: 60, peopleMin: 2, peopleMax: 2, showCounts: true, label: '簡單' },
+            1: { time: 45, peopleMin: 2, peopleMax: 4, showCounts: false, label: '中等' },
+            2: { time: 35, peopleMin: 2, peopleMax: 6, showCounts: false, label: '困難' }
         };
 
-        const TIME_PER_QUESTION = 60;
-        const FOOD_NAME = {'🍎':'蘋果','🍌':'香蕉','🍓':'草莓','🥟':'燒賣','🍪':'曲奇'};
-        const UNITS = {'🍎':'個','🍌':'條','🍓':'顆','🥟':'顆','🍪':'塊'};
+        const QUESTIONS_PER_GAME = 5;
+        /** 每題食物總數上限（堆上 + 各盤合計） */
+        const MAX_FOOD_TOTAL = 20;
 
-        let currentRemainderMode = 0, currentFormulaMode = 0, currentDifficulty = 1;
+        function randomInt(lo, hi) {
+            return lo + Math.floor(Math.random() * (hi - lo + 1));
+        }
+
+        function generateOneQuestion(difficulty, remainderMode) {
+            const cfg = DIFFICULTY_CONFIG[difficulty];
+            const p = cfg.peopleMin === cfg.peopleMax
+                ? cfg.peopleMin
+                : randomInt(cfg.peopleMin, cfg.peopleMax);
+
+            const bounds = {
+                0: { minTotal: 6, maxTotal: MAX_FOOD_TOTAL, multMin: 3, multMax: 10 },
+                1: { minTotal: 8, maxTotal: MAX_FOOD_TOTAL, multMin: 3, multMax: 10 },
+                2: { minTotal: 10, maxTotal: MAX_FOOD_TOTAL, multMin: 3, multMax: 10 }
+            }[difficulty];
+
+            if (remainderMode === 0) {
+                let m = randomInt(bounds.multMin, bounds.multMax);
+                let total = p * m;
+                if (total < bounds.minTotal) total = p * Math.ceil(bounds.minTotal / p);
+                if (total > bounds.maxTotal) total = p * Math.floor(bounds.maxTotal / p);
+                if (total < p) total = p * 2;
+                return { total, people: p };
+            }
+
+            let total;
+            let guard = 0;
+            while (guard++ < 200) {
+                const q = randomInt(2, bounds.multMax);
+                const r = randomInt(1, p - 1);
+                total = p * q + r;
+                if (total >= bounds.minTotal && total <= bounds.maxTotal && total % p !== 0) {
+                    return { total, people: p };
+                }
+            }
+            const r = 1;
+            const q = Math.max(2, Math.ceil((bounds.minTotal - r) / p));
+            total = p * q + r;
+            if (total % p === 0) total += 1;
+            if (total > bounds.maxTotal) total = Math.max(bounds.minTotal, bounds.maxTotal - 1);
+            while (total > bounds.minTotal && total % p === 0) total--;
+            if (total < bounds.minTotal) total = bounds.minTotal + (bounds.minTotal % p === 0 ? 1 : 0);
+            return { total, people: p };
+        }
+
+        function buildQuestionList(difficulty, remainderMode) {
+            const list = [];
+            const seen = new Set();
+            for (let i = 0; i < QUESTIONS_PER_GAME; i++) {
+                let q;
+                let tries = 0;
+                do {
+                    q = generateOneQuestion(difficulty, remainderMode);
+                    tries++;
+                } while (tries < 40 && seen.has(q.total + '-' + q.people));
+                seen.add(q.total + '-' + q.people);
+                list.push(q);
+            }
+            return list;
+        }
+        const FOOD_NAME = { '🍎': '蘋果', '🍌': '香蕉', '🍓': '草莓', '🥟': '燒賣', '🍪': '曲奇' };
+        const PLATE_FACE_EMOJIS = ['👦', '👧', '🧒', '👨', '👩', '🧑', '👴', '👵'];
+        const PLATE_NAMES = ['偉聰', '詠欣', '志賢', '心悅', '柏康', '可晴', '心盈', '子俊'];
+        const UNITS = { '🍎': '個', '🍌': '條', '🍓': '顆', '🥟': '顆', '🍪': '塊' };
+
+        let currentRemainderMode = 0, currentFormulaMode = 0, currentDifficulty = 0;
         let selectedFood = '🍎', selectedFoodName = '蘋果';
         let currentQuestions = [], currentQuestionIndex = 0;
         let totalItems = 0, numPeople = 0;
+        let currentTimeLimit = 60;
         let countdownInterval = null, hasSubmitted = false;
         let results = [];           // 儲存每題結果
         let totalTimeUsed = 0;      // 總用時
+        let divisionInputListenersAttached = false;
+        let simpleShareListenersAttached = false;
+        let draggingFoodEl = null;
+        let pickedFoodEl = null;
+        let foodBoardListenersAttached = false;
+        let suppressFoodClickUntil = 0;
+
+        function isCoarsePointer() {
+            return window.matchMedia('(pointer: coarse)').matches;
+        }
+
+        function updateMoveHint() {
+            const el = document.getElementById('moveHint');
+            if (!el) return;
+            if (isCoarsePointer()) {
+                el.textContent = '';
+                el.classList.add('move-hint--hidden');
+            } else {
+                el.classList.remove('move-hint--hidden');
+                el.textContent = '💡 用滑鼠拖曳到任意盤子或食物堆；或先點食物再點目的地，也可快速移動。';
+            }
+        }
+
+        function syncTouchPickUi() {
+            const ga = document.getElementById('gameArea');
+            if (ga) ga.classList.toggle('touch-pick-mode', isCoarsePointer());
+            document.querySelectorAll('#gameArea .siumai-item').forEach(item => {
+                item.draggable = !isCoarsePointer();
+            });
+            updateMoveHint();
+        }
+
+        function clearPickedFood() {
+            document.querySelectorAll('.siumai-item.picked').forEach(el => el.classList.remove('picked'));
+            pickedFoodEl = null;
+        }
+
+        function clearDropzoneHighlight() {
+            document.querySelectorAll('.dropzone.dragover, .pile.dragover').forEach(z => z.classList.remove('dragover'));
+        }
+
+        function onFoodDragStart(ev) {
+            draggingFoodEl = ev.currentTarget;
+            try {
+                ev.dataTransfer.setData('text/plain', 'food');
+                ev.dataTransfer.effectAllowed = 'move';
+            } catch (e) { /* ignore */ }
+        }
+
+        function onFoodDragEnd() {
+            draggingFoodEl = null;
+            clearDropzoneHighlight();
+            suppressFoodClickUntil = Date.now() + 400;
+        }
+
+        function wireFoodItem(item) {
+            item.addEventListener('dragstart', onFoodDragStart);
+            item.addEventListener('dragend', onFoodDragEnd);
+            item.draggable = !isCoarsePointer();
+        }
+
+        function onGameAreaDragOver(ev) {
+            if (!draggingFoodEl || hasSubmitted) return;
+            ev.preventDefault();
+            try { ev.dataTransfer.dropEffect = 'move'; } catch (e) { /* ignore */ }
+            const zone = ev.target.closest('.dropzone, .pile');
+            if (!zone) return;
+            clearDropzoneHighlight();
+            zone.classList.add('dragover');
+        }
+
+        function onGameAreaDrop(ev) {
+            ev.preventDefault();
+            clearDropzoneHighlight();
+            if (hasSubmitted || !draggingFoodEl) return;
+            const zone = ev.target.closest('.dropzone, .pile');
+            if (!zone || !document.getElementById('gameArea').contains(draggingFoodEl)) return;
+            zone.appendChild(draggingFoodEl);
+            clearPickedFood();
+            updateCounts();
+        }
+
+        function onGameBoardClick(ev) {
+            if (hasSubmitted) return;
+            if (ev.target.closest('button, input, select, textarea, label')) return;
+            const item = ev.target.closest('.siumai-item');
+            if (item) {
+                if (Date.now() < suppressFoodClickUntil) return;
+                ev.preventDefault();
+                if (pickedFoodEl === item) {
+                    item.classList.remove('picked');
+                    pickedFoodEl = null;
+                } else {
+                    clearPickedFood();
+                    item.classList.add('picked');
+                    pickedFoodEl = item;
+                }
+                return;
+            }
+            let zone = ev.target.closest('.dropzone, .pile');
+            if (!zone && pickedFoodEl) {
+                const plate = ev.target.closest('.plate');
+                if (plate) zone = plate.querySelector('.dropzone');
+            }
+            if (zone && pickedFoodEl) {
+                ev.preventDefault();
+                zone.appendChild(pickedFoodEl);
+                pickedFoodEl.classList.remove('picked');
+                pickedFoodEl = null;
+                updateCounts();
+            }
+        }
+
+        function ensureFoodBoardListeners() {
+            if (foodBoardListenersAttached) return;
+            foodBoardListenersAttached = true;
+            const ga = document.getElementById('gameArea');
+            ga.addEventListener('click', onGameBoardClick);
+            ga.addEventListener('dragover', onGameAreaDragOver, true);
+            ga.addEventListener('drop', onGameAreaDrop, true);
+            window.addEventListener('orientationchange', () => setTimeout(syncTouchPickUi, 250));
+        }
+
+        function getSecondsLeftOnTimer() {
+            const n = parseInt(document.getElementById('timer').textContent, 10);
+            const cap = currentTimeLimit || 60;
+            return Number.isFinite(n) ? Math.max(0, Math.min(cap, n)) : cap;
+        }
+
+        /**
+         * 兩部份皆對：100 分起算 + 速度加成最多 40（可超過 100，最高 140）。
+         * 未全對：只按正確比例給分（分配／第二部份各佔 50%），最高 50，不加速度分。
+         * 第二部份：有除式＝整條除式；沒除式＝「每人共分得」或（有餘數時）「每人分得＋還餘」兩數皆對。
+         */
+        function questionScoreFromAccuracyParts(distCorrect, secondPartCorrect, timeUsedSec) {
+            const raw = (distCorrect ? 0.5 : 0) + (secondPartCorrect ? 0.5 : 0);
+            if (raw <= 0) return 0;
+            const limit = currentTimeLimit || 60;
+            const u = Math.min(limit, Math.max(0, timeUsedSec));
+            const speedRatio = limit > 0 ? 1 - u / limit : 0;
+            const speedBonusMax = 40;
+            if (raw >= 1) {
+                return Math.round(100 + speedBonusMax * speedRatio);
+            }
+            return Math.round(100 * raw);
+        }
 
         // ==================== Grade System ====================
+        /** 總平均可超過 100（全對愈快愈高分）；稱號門檻配合新制。 */
         function getGrade(score) {
-            if (score >= 95) return { title: "分物大師", color: "#15803d" };
-            if (score >= 80) return { title: "分物之星", color: "#eab308" };
-            if (score >= 60) return { title: "分物小能手", color: "#f59e0b" };
-            return { title: "繼續努力哦！", color: "#b91c1c" };
+            if (score >= 118) return { title: "分物大師", color: "#15803d" };
+            if (score >= 100) return { title: "分物之星", color: "#eab308" };
+            if (score >= 55) return { title: "分物小能手", color: "#f59e0b" };
+            return { title: "分物新手", color: "#0369a1" };
         }
 
         function getGradeCriteria() {
             return `
-                <strong>評分標準：</strong><br>
-                95–100 分 → 分物大師<br>
-                80–94 分 → 分物之星<br>
-                60–79 分 → 分物小能手<br>
-                0–59 分 → 繼續努力哦！
+                <strong>總分怎麼算？</strong><br>
+                顯示分數＝各題得分<strong>平均</strong>（可超過 100）。<br>
+                · <strong>兩部份都對</strong>（分配 + 除式或填寫）：該題先給 <strong>100 分</strong>，再加速度分最多 <strong>40 分</strong>（用時越短加成越高，該題最高 140 分）。<br>
+                · <strong>未全對</strong>：只按對錯比例給分（分配、第二部份各佔一半），最高 50 分，不加速度分。<br>
+                · <strong>沒有除式</strong>：無餘數題填「每人共分得」；有餘數題須「每人分得」與「還餘」都對才算第二部份對。<br>
+                · <strong>有除式</strong>：須整條除式正確。<br><br>
+                <strong>稱號（配合可超過 100 的平均分）：</strong><br>
+                118 分以上 → 分物大師<br>
+                100–117 分 → 分物之星（至少代表整體已能穩定全對）<br>
+                55–99 分 → 分物小能手<br>
+                0–54 分 → 分物新手
             `;
+        }
+
+        function distributionAnswerDescription() {
+            const unit = UNITS[selectedFood];
+            const correctQ = Math.floor(totalItems / numPeople);
+            const correctR = totalItems % numPeople;
+            const rem = currentRemainderMode === 1
+                ? (correctR > 0 ? `食物堆餘 <strong>${correctR}</strong>${unit}` : '食物堆餘數 <strong>0</strong>')
+                : '';
+            const remPhrase = currentRemainderMode === 1 ? `；${rem}` : '';
+            return `每人盤上 <strong>${correctQ}</strong>${unit}${remPhrase}。`;
+        }
+
+        function formulaCorrectAnswerPhrase() {
+            const correctQ = Math.floor(totalItems / numPeople);
+            const correctR = totalItems % numPeople;
+            if (currentRemainderMode === 1) {
+                return `<strong>${totalItems} ÷ ${numPeople} = ${correctQ} ··· ${correctR}</strong>`;
+            }
+            return `<strong>${totalItems} ÷ ${numPeople} = ${correctQ}</strong>`;
+        }
+
+        function correctAnswerFeedbackHtml() {
+            const unit = UNITS[selectedFood];
+            const correctQ = Math.floor(totalItems / numPeople);
+            const correctR = totalItems % numPeople;
+            const distBlock = `有 <strong>${totalItems}</strong>${unit}${selectedFoodName}，分給 <strong>${numPeople}</strong> 人 → ${distributionAnswerDescription()}`;
+            if (currentFormulaMode === 1) {
+                return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 除式</strong><br>應填 ${formulaCorrectAnswerPhrase()}`;
+            }
+            if (currentRemainderMode === 1) {
+                return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 填寫</strong><br>每人分得 <strong>${correctQ}</strong>${unit}，還餘 <strong>${correctR}</strong>${unit}`;
+            }
+            return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 每人共分得</strong><br>應填 <strong>${correctQ}</strong>${unit}`;
+        }
+
+        function wrongFeedbackHtml(distCorrect, formulaCorrect, shareCorrect, shareQCorrect, shareRCorrect) {
+            const parts = [];
+            const unit = UNITS[selectedFood];
+            const correctQ = Math.floor(totalItems / numPeople);
+            if (distCorrect) {
+                parts.push('<strong>① 分配</strong>：✅ 正確。');
+            } else {
+                parts.push(`<strong>① 分配</strong>：❌ 請改為 — ${distributionAnswerDescription()}`);
+            }
+            if (currentFormulaMode === 1) {
+                if (formulaCorrect) {
+                    parts.push('<strong>② 除式</strong>：✅ 正確。');
+                } else {
+                    parts.push(`<strong>② 除式</strong>：❌ 應填 ${formulaCorrectAnswerPhrase()}`);
+                }
+            } else if (currentRemainderMode === 1) {
+                const correctR = totalItems % numPeople;
+                if (shareCorrect) {
+                    parts.push('<strong>② 每人分得／還餘</strong>：✅ 正確。');
+                } else {
+                    const bits = [];
+                    if (!shareQCorrect) bits.push(`每人分得應為 <strong>${correctQ}</strong>${unit}`);
+                    if (!shareRCorrect) bits.push(`還餘應為 <strong>${correctR}</strong>${unit}`);
+                    parts.push(`<strong>② 填寫</strong>：❌ ${bits.join('；')}`);
+                }
+            } else {
+                if (shareCorrect) {
+                    parts.push('<strong>② 每人共分得</strong>：✅ 正確。');
+                } else {
+                    parts.push(`<strong>② 每人共分得</strong>：❌ 應為 <strong>${correctQ}</strong>${unit}`);
+                }
+            }
+            return parts.join('<br><br>');
         }
 
         // ==================== Selection Functions ====================
         function selectRemainder(m) { currentRemainderMode = m; updateActive('#remainderChoices', m); }
         function selectFormula(m) { currentFormulaMode = m; updateActive('#formulaChoices', m); }
-        function selectDifficulty(m) { currentDifficulty = m; updateActive('#difficultyChoices', m); }
+        function selectDifficulty(m) {
+            currentDifficulty = m;
+            updateActive('#difficultyChoices', m);
+            updateDifficultyHint();
+        }
+
+        function updateDifficultyHint() {
+            const el = document.getElementById('difficultyHint');
+            if (!el) return;
+            const c = DIFFICULTY_CONFIG[currentDifficulty];
+            const lines = [
+                `<strong>${c.label}</strong>：每題 ${c.time} 秒；人數 ${c.peopleMin === c.peopleMax ? c.peopleMin + ' 位' : c.peopleMin + '～' + c.peopleMax + ' 位（隨機）'}。`,
+                c.showCounts ? '會顯示每盤食物的數量。' : '不顯示每盤食物的數量，請自己點數。'
+            ];
+            el.innerHTML = lines.join('');
+        }
 
         function updateActive(container, val) {
             document.querySelectorAll(container + ' .choice-btn').forEach(btn => {
@@ -381,28 +1324,45 @@
         }
 
         function startGame() {
-            currentQuestions = QUESTION_SETS[currentDifficulty][currentRemainderMode];
+            currentQuestions = buildQuestionList(currentDifficulty, currentRemainderMode);
             currentQuestionIndex = 0;
             results = [];
             totalTimeUsed = 0;
+            divisionInputListenersAttached = false;
+            simpleShareListenersAttached = false;
             document.getElementById('setupPanel').style.display = 'none';
-            document.getElementById('gameArea').style.display = 'block';
-            if (currentFormulaMode === 1) document.getElementById('divisionArea').style.display = 'block';
+            document.getElementById('gameArea').style.display = 'flex';
+            document.body.classList.add('game-active');
+            document.getElementById('timer').style.background = '';
+            if (currentFormulaMode === 1) {
+                document.getElementById('divisionArea').style.display = 'block';
+                document.getElementById('simpleShareArea').style.display = 'none';
+            } else {
+                document.getElementById('divisionArea').style.display = 'none';
+                document.getElementById('simpleShareArea').style.display = 'block';
+            }
+            ensureFoodBoardListeners();
+            syncTouchPickUi();
             loadCurrentQuestion();
         }
 
         function loadCurrentQuestion() {
             const q = currentQuestions[currentQuestionIndex];
-            totalItems = q.total; 
+            totalItems = q.total;
             numPeople = q.people;
 
+            const dcfg = DIFFICULTY_CONFIG[currentDifficulty];
+            currentTimeLimit = dcfg.time;
+            document.getElementById('gameArea').classList.toggle('hide-counts-mode', !dcfg.showCounts);
+
             document.getElementById('questionBox').innerHTML = `有 <strong>${totalItems}</strong> ${UNITS[selectedFood]}${selectedFoodName}，要公平分給 <strong>${numPeople}</strong> 位朋友。`;
-            document.getElementById('pileTitle').textContent = `${selectedFood}堆`;
+            document.getElementById('pileTitle').textContent = selectedFoodName;
             document.getElementById('currentQ').textContent = currentQuestionIndex + 1;
 
             resetGameBoard();
             startTimer();
             if (currentFormulaMode === 1) setupDivisionArea();
+            else setupSimpleShareArea();
 
             hasSubmitted = false;
             document.getElementById('submitBtn').style.display = 'inline-block';
@@ -411,47 +1371,40 @@
             document.getElementById('resetBtn').style.display = 'inline-block';
         }
 
-        function resetGameBoard() {
+        function resetGameBoard(hideFeedback = true) {
+            draggingFoodEl = null;
+            clearPickedFood();
+            clearDropzoneHighlight();
             const pile = document.getElementById('pile');
             pile.innerHTML = '';
             for (let i = 0; i < totalItems; i++) {
                 const item = document.createElement('div');
                 item.className = 'siumai-item';
                 item.textContent = selectedFood;
-                item.draggable = true;
-                item.ondragstart = (ev) => ev.dataTransfer.setData("text", "food");
+                wireFoodItem(item);
                 pile.appendChild(item);
             }
             createPlates();
-            document.getElementById('feedback').style.display = 'none';
+            if (hideFeedback) document.getElementById('feedback').style.display = 'none';
         }
 
         function createPlates() {
             const container = document.getElementById('platesContainer');
             container.innerHTML = '';
             for (let i = 1; i <= numPeople; i++) {
+                const face = PLATE_FACE_EMOJIS[(i - 1) % PLATE_FACE_EMOJIS.length];
+                const pname = PLATE_NAMES[(i - 1) % PLATE_NAMES.length];
                 container.innerHTML += `
-                    <div class="plate">
-                        <div class="plate-label">👦 第 ${i} 位</div>
-                        <div id="plate-${i}" class="dropzone" ondrop="dropFood(event)" ondragover="allowDrop(event)"></div>
+                    <div class="plate" aria-label="第 ${i} 位 ${pname}">
+                        <div class="plate-label">
+                            <span class="plate-face" aria-hidden="true">${face}</span>
+                            <span class="plate-label-text">${pname}</span>
+                        </div>
+                        <div id="plate-${i}" class="dropzone"></div>
                         <div class="count" id="count-${i}">0</div>
                     </div>`;
             }
         }
-
-        window.allowDrop = ev => { ev.preventDefault(); const zone = ev.target.closest('.dropzone, .pile'); if (zone) zone.classList.add('dragover'); };
-        window.dropFood = function(ev) {
-            ev.preventDefault();
-            const zone = ev.target.closest('.dropzone, .pile');
-            if (!zone) return;
-            zone.classList.remove('dragover');
-            const sourcePile = document.getElementById('pile');
-            if (sourcePile.children.length > 0) {
-                const item = sourcePile.lastElementChild;
-                zone.appendChild(item);
-                updateCounts();
-            }
-        };
 
         function updateCounts() {
             for (let i = 1; i <= numPeople; i++) {
@@ -459,53 +1412,131 @@
                 const plate = document.getElementById('plate-' + i);
                 if (countEl && plate) countEl.textContent = plate.children.length;
             }
+            const badge = document.getElementById('pileCountBadge');
+            const pile = document.getElementById('pile');
+            if (badge && pile) badge.textContent = pile.children.length;
         }
 
         function resetDistribution() { resetGameBoard(); }
 
-        function setupDivisionArea() { /* 保持原樣 */ 
-            ['totalInput','peopleInput','quotientInput','remainderInput'].forEach(id => {
+        function setupDivisionArea() {
+            ['totalInput', 'peopleInput', 'quotientInput', 'remainderInput'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) {
-                    el.value = '';
+                if (el) el.value = '';
+            });
+            if (!divisionInputListenersAttached) {
+                divisionInputListenersAttached = true;
+                ['totalInput', 'peopleInput', 'quotientInput', 'remainderInput'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.addEventListener('input', () => { if (el.value < 0) el.value = 0; });
+                        el.addEventListener('keydown', e => { if (e.key === '-' || e.key === 'e') e.preventDefault(); });
+                    }
+                });
+            }
+            document.getElementById('remainderPart').style.display = currentRemainderMode === 1 ? 'flex' : 'none';
+            const hintEl = document.getElementById('divisionFormulaHint');
+            if (hintEl) {
+                if (currentDifficulty === 0) {
+                    hintEl.style.display = 'block';
+                    hintEl.textContent = currentRemainderMode === 1
+                        ? '物件的總數量 ÷ 平均分成的份數量 = 每份的數量 …… 餘數'
+                        : '物件的總數量 ÷ 平均分成的份數量 = 每份的數量';
+                } else {
+                    hintEl.style.display = 'none';
+                    hintEl.textContent = '';
+                }
+            }
+        }
+
+        function setupSimpleShareArea() {
+            const withRem = currentRemainderMode === 1;
+            const lblSingle = document.getElementById('simpleShareLabelSingle');
+            const lblQ = document.getElementById('simpleShareLabelQuotient');
+            const conn = document.getElementById('simpleShareRemConnector');
+            const remWrap = document.getElementById('simpleRemainderInputWrap');
+            const remUnit = document.getElementById('simpleRemainderUnit');
+            if (lblSingle) lblSingle.style.display = withRem ? 'none' : '';
+            if (lblQ) lblQ.style.display = withRem ? '' : 'none';
+            if (conn) conn.style.display = withRem ? '' : 'none';
+            if (remWrap) remWrap.style.display = withRem ? '' : 'none';
+            if (remUnit) remUnit.style.display = withRem ? '' : 'none';
+
+            const unit = UNITS[selectedFood] || '';
+            const unitEl = document.getElementById('eachShareUnit');
+            if (unitEl) unitEl.textContent = unit;
+            if (remUnit) remUnit.textContent = unit;
+
+            const inp = document.getElementById('eachShareInput');
+            const remInp = document.getElementById('simpleRemainderInput');
+            if (inp) inp.value = '';
+            if (remInp) remInp.value = '';
+
+            if (!simpleShareListenersAttached) {
+                simpleShareListenersAttached = true;
+                const bindNum = (el) => {
+                    if (!el) return;
                     el.addEventListener('input', () => { if (el.value < 0) el.value = 0; });
                     el.addEventListener('keydown', e => { if (e.key === '-' || e.key === 'e') e.preventDefault(); });
-                }
-            });
-            document.getElementById('remainderPart').style.display = currentRemainderMode === 1 ? 'flex' : 'none';
+                };
+                bindNum(inp);
+                bindNum(remInp);
+            }
         }
 
         function startTimer() {
             if (countdownInterval) clearInterval(countdownInterval);
-            let timeLeft = TIME_PER_QUESTION;
-            document.getElementById('timer').textContent = timeLeft + ' 秒';
+            let timeLeft = currentTimeLimit || 60;
+            const timerEl = document.getElementById('timer');
+            timerEl.style.background = '#fee2e2';
+            timerEl.textContent = timeLeft + ' 秒';
             countdownInterval = setInterval(() => {
                 timeLeft--;
-                document.getElementById('timer').textContent = timeLeft + ' 秒';
-                if (timeLeft <= 10) document.getElementById('timer').style.background = '#fecaca';
+                timerEl.textContent = timeLeft + ' 秒';
+                if (timeLeft <= 10) timerEl.style.background = '#fecaca';
+                else timerEl.style.background = '#fee2e2';
                 if (timeLeft <= 0) submitAnswer(true);
             }, 1000);
         }
 
-        function showAnswer() { /* 保持原樣 */ 
-            document.getElementById('totalInput').value = totalItems;
-            document.getElementById('peopleInput').value = numPeople;
-            document.getElementById('quotientInput').value = Math.floor(totalItems / numPeople);
-            if (currentRemainderMode === 1) document.getElementById('remainderInput').value = totalItems % numPeople;
-            resetGameBoard();
-            const plates = Array.from({length: numPeople}, (_,i) => document.getElementById(`plate-${i+1}`));
+        function showAnswer() {
+            const correctQ = Math.floor(totalItems / numPeople);
+            const correctR = totalItems % numPeople;
+            if (currentFormulaMode === 1) {
+                document.getElementById('totalInput').value = totalItems;
+                document.getElementById('peopleInput').value = numPeople;
+                document.getElementById('quotientInput').value = correctQ;
+                if (currentRemainderMode === 1) document.getElementById('remainderInput').value = correctR;
+            } else {
+                const es = document.getElementById('eachShareInput');
+                if (es) es.value = correctQ;
+                const sr = document.getElementById('simpleRemainderInput');
+                if (currentRemainderMode === 1 && sr) sr.value = correctR;
+            }
+            resetGameBoard(false);
+            const plates = Array.from({ length: numPeople }, (_, i) => document.getElementById(`plate-${i + 1}`));
             Array.from(document.getElementById('pile').children).forEach((item, i) => {
                 plates[i % numPeople].appendChild(item);
             });
             updateCounts();
+            if (hasSubmitted) {
+                const fb = document.getElementById('feedback');
+                fb.classList.add('feedback-expanded');
+                fb.innerHTML = correctAnswerFeedbackHtml();
+                fb.style.display = 'block';
+                fb.style.background = '#fee2e2';
+                fb.style.color = '#b91c1c';
+            }
         }
 
         function submitAnswer(isTimeout = false) {
             if (hasSubmitted) return;
             hasSubmitted = true;
+            clearPickedFood();
+            clearDropzoneHighlight();
             if (countdownInterval) clearInterval(countdownInterval);
 
-            const timeUsedThisQ = TIME_PER_QUESTION - parseInt(document.getElementById('timer').textContent) || 0;
+            const timeUsedThisQ = (currentTimeLimit || 60) - getSecondsLeftOnTimer();
             totalTimeUsed += timeUsedThisQ;
 
             const correctQ = Math.floor(totalItems / numPeople);
@@ -517,6 +1548,9 @@
             }
 
             let formulaCorrect = true;
+            let shareCorrect = true;
+            let shareQCorrect = true;
+            let shareRCorrect = true;
             if (currentFormulaMode === 1) {
                 const stuT = parseInt(document.getElementById('totalInput').value) || 0;
                 const stuP = parseInt(document.getElementById('peopleInput').value) || 0;
@@ -525,27 +1559,54 @@
                 if (stuT !== totalItems || stuP !== numPeople || stuQ !== correctQ || (currentRemainderMode === 1 && stuR !== correctR)) {
                     formulaCorrect = false;
                 }
+            } else {
+                const stuQ = parseInt(document.getElementById('eachShareInput').value, 10);
+                shareQCorrect = Number.isFinite(stuQ) && stuQ === correctQ;
+                if (currentRemainderMode === 1) {
+                    const stuR = parseInt(document.getElementById('simpleRemainderInput').value, 10);
+                    shareRCorrect = Number.isFinite(stuR) && stuR === correctR;
+                } else {
+                    shareRCorrect = true;
+                }
+                shareCorrect = shareQCorrect && shareRCorrect;
             }
 
-            const isCorrect = distCorrect && (currentFormulaMode === 0 || formulaCorrect);
+            const secondOk = currentFormulaMode === 1 ? formulaCorrect : shareCorrect;
+            const isCorrect = distCorrect && secondOk;
+            const questionScore = questionScoreFromAccuracyParts(distCorrect, secondOk, timeUsedThisQ);
 
             results.push({
                 qNum: currentQuestionIndex + 1,
                 isCorrect: isCorrect,
+                distCorrect: distCorrect,
+                formulaCorrect: currentFormulaMode === 1 ? formulaCorrect : null,
+                shareAnswerCorrect: currentFormulaMode === 0 ? shareCorrect : null,
                 correctQ: correctQ,
-                correctR: correctR
+                correctR: correctR,
+                timeUsed: timeUsedThisQ,
+                questionScore: questionScore
             });
 
             const fb = document.getElementById('feedback');
             const unit = UNITS[selectedFood];
 
+            fb.classList.remove('feedback-expanded');
             if (isCorrect) {
-                fb.style.background = '#d1fae5'; fb.style.color = '#166534';
-                fb.innerHTML = `🎉 太棒了！<br>${totalItems}${unit}${selectedFoodName}分給${numPeople}個人，每個人共分得${correctQ}${unit}`;
+                fb.style.background = '#d1fae5';
+                fb.style.color = '#166534';
+                if (currentFormulaMode === 1) {
+                    fb.innerHTML = `🎉 太棒了！分配與除式都正確！<br>${totalItems}${unit}${selectedFoodName}分給${numPeople}個人，每人 ${correctQ}${unit}${currentRemainderMode === 1 ? (correctR > 0 ? `，餘${correctR}${unit}` : '，餘數 0') : ''}`;
+                } else if (currentRemainderMode === 1) {
+                    fb.innerHTML = `🎉 太棒了！分配與填寫都正確！<br>${totalItems}${unit}${selectedFoodName}分給${numPeople}個人，每人分得 ${correctQ}${unit}，還餘 ${correctR}${unit}`;
+                } else {
+                    fb.innerHTML = `🎉 太棒了！分配與「每人共分得」都正確！<br>${totalItems}${unit}${selectedFoodName}分給${numPeople}個人，每人 ${correctQ}${unit}`;
+                }
                 document.getElementById('hintBtn').style.display = 'none';
             } else {
-                fb.style.background = '#fee2e2'; fb.style.color = '#b91c1c';
-                fb.innerHTML = `正確答案：<br>${totalItems}${unit}${selectedFoodName}分給${numPeople}個人，每個人共分得${correctQ}${unit}`;
+                fb.style.background = '#fee2e2';
+                fb.style.color = '#b91c1c';
+                fb.classList.add('feedback-expanded');
+                fb.innerHTML = wrongFeedbackHtml(distCorrect, formulaCorrect, shareCorrect, shareQCorrect, shareRCorrect);
                 document.getElementById('hintBtn').style.display = 'inline-block';
             }
 
@@ -566,43 +1627,75 @@
 
         function showFinalResult() {
             document.getElementById('gameArea').style.display = 'none';
+            document.body.classList.remove('game-active');
             const resultPanel = document.getElementById('resultPanel');
             resultPanel.style.display = 'block';
 
+            const n = results.length;
             const correctCount = results.filter(r => r.isCorrect).length;
-            const score = Math.round((correctCount / results.length) * 100);
+            const score = n ? Math.round(results.reduce((s, r) => s + r.questionScore, 0) / n) : 0;
+            const sumTime = results.reduce((s, r) => s + r.timeUsed, 0);
+            const avgTime = n ? Math.round((sumTime / n) * 10) / 10 : 0;
 
-            // 顯示分數
             document.getElementById('scoreCircle').textContent = score;
-            document.getElementById('scoreCircle').style.borderColor = score >= 80 ? '#15803d' : '#f59e0b';
+            const circle = document.getElementById('scoreCircle');
+            circle.style.borderColor = score >= 118 ? '#15803d' : (score >= 100 ? '#22c55e' : '#f59e0b');
 
-            // 顯示稱號 + 資訊圖示
             const grade = getGrade(score);
             const gradeEl = document.getElementById('gradeTitle');
             gradeEl.innerHTML = `
                 ${grade.title}
-                <span class="tooltip">
-                    <span style="font-size:1.4rem;cursor:help;">ℹ️</span>
+                <span class="tooltip" tabindex="0" role="button" aria-label="評分說明">
+                    <span style="font-size:1.35rem;">ℹ️</span>
                     <span class="tooltiptext">${getGradeCriteria()}</span>
                 </span>
             `;
             gradeEl.style.color = grade.color;
 
-            // 總時間
-            document.getElementById('totalTime').textContent = totalTimeUsed;
+            const dcfg = DIFFICULTY_CONFIG[currentDifficulty];
+            const remLabel = currentRemainderMode === 1 ? '有餘數' : '沒有餘數';
+            const formLabel = currentFormulaMode === 1 ? '有除式' : '沒有除式';
+            const modeEl = document.getElementById('resultModeSummary');
+            if (modeEl) {
+                modeEl.innerHTML =
+                    '<strong>本局設定</strong>' +
+                    '<p class="result-mode-line">餘數模式：<strong>' + remLabel + '</strong>　' +
+                    '除式模式：<strong>' + formLabel + '</strong>　' +
+                    '難度：<strong>' + dcfg.label + '</strong></p>' +
+                    '<p class="result-mode-line">食物：<strong>' + selectedFood + ' ' + selectedFoodName + '</strong></p>';
+            }
 
-            // 每題列表
+            document.getElementById('totalTime').textContent = totalTimeUsed;
+            document.getElementById('timeCapLabel').textContent = dcfg.time;
+
+            const breakdownExtra = currentFormulaMode === 1
+                ? '有除式：全對則 100 分＋速度最多 40；未全對則依分配／除式對錯比例給分（各半），不加速度分。'
+                : (currentRemainderMode === 1
+                    ? '沒除式（有餘數）：全對則 100＋速度最多 40；未全對則依分配與「每人分得＋還餘」對錯比例給分，不加速度分。'
+                    : '沒除式：全對則 100＋速度最多 40；未全對則依分配與「每人共分得」對錯比例給分，不加速度分。');
+            document.getElementById('scoreBreakdown').innerHTML =
+                `「全對」<strong>${correctCount}</strong> / ${n} 題 · 平均每題用時 <strong>${avgTime}</strong> 秒<br>` +
+                `${breakdownExtra}`;
+
             let listHTML = '';
             results.forEach(r => {
+                let formulaMeta = '';
+                if (currentFormulaMode === 1 && r.formulaCorrect !== null) {
+                    formulaMeta = `<span class="result-dim">分配 ${r.distCorrect ? '✅' : '❌'} · 除式 ${r.formulaCorrect ? '✅' : '❌'}</span>`;
+                } else if (currentFormulaMode === 0 && r.shareAnswerCorrect !== null && r.shareAnswerCorrect !== undefined) {
+                    formulaMeta = `<span class="result-dim">分配 ${r.distCorrect ? '✅' : '❌'} · 每人分得 ${r.shareAnswerCorrect ? '✅' : '❌'}</span>`;
+                }
                 listHTML += `
                     <div class="result-item">
                         <span>第 ${r.qNum} 題</span>
                         <span class="${r.isCorrect ? 'correct' : 'wrong'}">
-                            ${r.isCorrect ? '✅ 正確' : '❌ 錯誤'}
+                            ${r.isCorrect ? '✅ 全對' : '❌ 未全對'}
+                            <span class="result-item-meta">${r.questionScore} 分 · 用時 ${r.timeUsed} 秒${formulaMeta}</span>
                         </span>
                     </div>`;
             });
             document.getElementById('resultList').innerHTML = listHTML;
+            window.scrollTo(0, 0);
         }
 
         function restartGame() {
@@ -612,7 +1705,11 @@
         window.onload = () => {
             document.querySelector('.food-option').classList.add('selected');
             document.getElementById('startGameBtn').disabled = false;
+            const cap = document.getElementById('timeCapLabel');
+            if (cap) cap.textContent = DIFFICULTY_CONFIG[currentDifficulty].time;
+            updateDifficultyHint();
         };
     </script>
 </body>
+
 </html>
