@@ -1264,14 +1264,14 @@
             const unit = UNITS[selectedFood];
             const correctQ = Math.floor(totalItems / numPeople);
             const correctR = totalItems % numPeople;
-            const distBlock = `有 <strong>${totalItems}</strong>${unit}${selectedFoodName}，分給 <strong>${numPeople}</strong> 人 → ${distributionAnswerDescription()}`;
+            const distBlock = `把 <strong>${totalItems}</strong>${unit}${selectedFoodName}平均分給 <strong>${numPeople}</strong> 人 → ${distributionAnswerDescription()}`;
             if (currentFormulaMode === 1) {
-                return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 除式</strong><br>應填 ${formulaCorrectAnswerPhrase()}`;
+                return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 除式</strong><br>應為 ${formulaCorrectAnswerPhrase()}`;
             }
             if (currentRemainderMode === 1) {
                 return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 填寫</strong><br>每人分得 <strong>${correctQ}</strong>${unit}，還餘 <strong>${correctR}</strong>${unit}`;
             }
-            return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 每人共分得</strong><br>應填 <strong>${correctQ}</strong>${unit}`;
+            return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 每人分得</strong><br>應填 <strong>${correctQ}</strong>${unit}`;
         }
 
         function wrongFeedbackHtml(distCorrect, formulaCorrect, shareCorrect, shareQCorrect, shareRCorrect) {
@@ -1281,13 +1281,13 @@
             if (distCorrect) {
                 parts.push('<strong>① 分配</strong>：✅ 正確。');
             } else {
-                parts.push(`<strong>① 分配</strong>：❌ 請改為 — ${distributionAnswerDescription()}`);
+                parts.push(`<strong>① 分配</strong>：❌錯誤。應為${distributionAnswerDescription()}`);
             }
             if (currentFormulaMode === 1) {
                 if (formulaCorrect) {
                     parts.push('<strong>② 除式</strong>：✅ 正確。');
                 } else {
-                    parts.push(`<strong>② 除式</strong>：❌ 應填 ${formulaCorrectAnswerPhrase()}`);
+                    parts.push(`<strong>② 除式</strong>：❌錯誤。 應為 ${formulaCorrectAnswerPhrase()}`);
                 }
             } else if (currentRemainderMode === 1) {
                 const correctR = totalItems % numPeople;
@@ -1297,13 +1297,13 @@
                     const bits = [];
                     if (!shareQCorrect) bits.push(`每人分得應為 <strong>${correctQ}</strong>${unit}`);
                     if (!shareRCorrect) bits.push(`還餘應為 <strong>${correctR}</strong>${unit}`);
-                    parts.push(`<strong>② 填寫</strong>：❌ ${bits.join('；')}`);
+                    parts.push(`<strong>② 填寫</strong>：❌錯誤。 ${bits.join('；')}`);
                 }
             } else {
                 if (shareCorrect) {
-                    parts.push('<strong>② 每人共分得</strong>：✅ 正確。');
+                    parts.push('<strong>② 每人分得</strong>：✅ 正確。');
                 } else {
-                    parts.push(`<strong>② 每人共分得</strong>：❌ 應為 <strong>${correctQ}</strong>${unit}`);
+                    parts.push(`<strong>② 每人分得</strong>：❌ 錯誤。應為 <strong>${correctQ}</strong>${unit}`);
                 }
             }
             return parts.join('<br><br>');
@@ -1380,7 +1380,7 @@
             currentTimeLimit = dcfg.time;
             document.getElementById('gameArea').classList.toggle('hide-counts-mode', !dcfg.showCounts);
 
-            document.getElementById('questionBox').innerHTML = `有 <strong>${totalItems}</strong> ${UNITS[selectedFood]}${selectedFoodName}，要公平分給 <strong>${numPeople}</strong> 位朋友。`;
+            document.getElementById('questionBox').innerHTML = `把 <strong>${totalItems}</strong> ${UNITS[selectedFood]}${selectedFoodName}平均分給 <strong>${numPeople}</strong> 位朋友。`;
             document.getElementById('pileTitle').textContent = selectedFoodName;
             document.getElementById('currentQ').textContent = currentQuestionIndex + 1;
 
@@ -1632,11 +1632,11 @@
                 fb.style.background = '#d1fae5';
                 fb.style.color = '#166534';
                 if (currentFormulaMode === 1) {
-                    fb.innerHTML = `🎉 太棒了！分配與除式都正確！<br>${totalItems}${unit}${selectedFoodName}分給${numPeople}個人，每人 ${correctQ}${unit}${currentRemainderMode === 1 ? (correctR > 0 ? `，餘${correctR}${unit}` : '，餘數 0') : ''}`;
+                    fb.innerHTML = `🎉 太棒了！分配與除式都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}${currentRemainderMode === 1 ? (correctR > 0 ? `，餘${correctR}${unit}` : '，餘數 0') : ''}`;
                 } else if (currentRemainderMode === 1) {
-                    fb.innerHTML = `🎉 太棒了！分配與填寫都正確！<br>${totalItems}${unit}${selectedFoodName}分給${numPeople}個人，每人分得 ${correctQ}${unit}，還餘 ${correctR}${unit}`;
+                    fb.innerHTML = `🎉 太棒了！分配與填寫都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}，還餘 ${correctR}${unit}`;
                 } else {
-                    fb.innerHTML = `🎉 太棒了！分配與「每人共分得」都正確！<br>${totalItems}${unit}${selectedFoodName}分給${numPeople}個人，每人 ${correctQ}${unit}`;
+                    fb.innerHTML = `🎉 太棒了！分配與「每人共分得」都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}`;
                 }
                 document.getElementById('hintBtn').style.display = 'none';
             } else {
