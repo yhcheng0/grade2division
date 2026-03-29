@@ -6,7 +6,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>🍎 分物練習</title>
+    <title> 分物練習</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
 
@@ -494,16 +494,17 @@
 
         .input-slot {
             box-sizing: border-box;
-            width: clamp(4.5rem, 20vw, 7rem);
-            min-width: 4.25rem;
+            width: clamp(5.25rem, 32vw, 11rem);
+            min-width: 5rem;
             max-width: 100%;
-            height: clamp(48px, 10vh, 68px);
-            padding: 4px 6px;
-            font-size: clamp(1rem, 2.8vmin, 1.75rem);
+            min-height: clamp(52px, 14vmin, 96px);
+            height: clamp(52px, 14vmin, 96px);
+            padding: 8px 12px;
+            font-size: clamp(1.2rem, 4.2vmin, 2.15rem);
             text-align: center;
             line-height: 1.1;
             border: 3px solid #f59e0b;
-            border-radius: 12px;
+            border-radius: 14px;
             background: white;
             outline: none;
             font-variant-numeric: tabular-nums;
@@ -815,7 +816,7 @@
     <!-- Setup Panel -->
     <div id="setupPanel" class="setup-panel">
         <div class="header">
-            <h1>🍎 分物練習 🍎</h1>
+            <h1>🍎 分物練習 🍎 </h1>
             <p class="setup-hint">建議使用<strong>橫向</strong>畫面，遊戲時較少捲動、較好操作。</p>
         </div>
 
@@ -832,16 +833,16 @@
         <div class="section-title">3. 難度模式</div>
         <p class="difficulty-hint" id="difficultyHint"></p>
         <div class="choice-grid" id="difficultyChoices">
-            <button type="button" class="choice-btn active" data-diff="0" onclick="selectDifficulty(0)">簡單 Easy</button>
-            <button type="button" class="choice-btn" data-diff="1" onclick="selectDifficulty(1)">中等 Medium</button>
-            <button type="button" class="choice-btn" data-diff="2" onclick="selectDifficulty(2)">困難 Hard</button>
+            <button type="button" class="choice-btn active" data-diff="0" onclick="selectDifficulty(0)">簡單</button>
+            <button type="button" class="choice-btn" data-diff="1" onclick="selectDifficulty(1)">中等 </button>
+            <button type="button" class="choice-btn" data-diff="2" onclick="selectDifficulty(2)">困難 </button>
         </div>
 
         <div class="food-select">
             <p style="margin-bottom:15px;color:#854d0e;font-size:1.3rem;">4. 選擇要分的食物</p>
             <span class="food-option" data-food="🍎" onclick="selectFood(this)">🍎</span>
-            <span class="food-option" data-food="🍌" onclick="selectFood(this)">🍌</span>
-            <span class="food-option" data-food="🍓" onclick="selectFood(this)">🍓</span>
+            <span class="food-option" data-food="🌭" onclick="selectFood(this)">🌭</span>
+            <span class="food-option" data-food="🍬" onclick="selectFood(this)">🍬</span>
             <span class="food-option" data-food="🥟" onclick="selectFood(this)">🥟</span>
             <span class="food-option" data-food="🍪" onclick="selectFood(this)">🍪</span>
         </div>
@@ -888,7 +889,7 @@
                         <input id="quotientInput" type="number" min="0" inputmode="numeric" class="input-slot"
                             placeholder="?" autocomplete="off">
                     </div>
-                    <div id="remainderPart" style="display:none; align-items:center; gap:8px;">
+                    <div id="remainderPart" style="display:none; align-items:center; gap:8px; flex-wrap:wrap;">
                         <span class="operator">......</span>
                         <div class="input-container">
                             <input id="remainderInput" type="number" min="0" inputmode="numeric" class="input-slot"
@@ -965,79 +966,99 @@
         // ==================== Config ====================
         /** 簡單：60 秒。中等：45 秒。困難：35 秒。 */
         const DIFFICULTY_CONFIG = {
+            /** 簡單：食物總數題庫皆 ≤10；人數固定 2 位 */
             0: { time: 60, peopleMin: 2, peopleMax: 2, showCounts: true, label: '簡單' },
-            1: { time: 45, peopleMin: 2, peopleMax: 4, showCounts: false, label: '中等' },
+            /** 中等／困難：人數 2～6 位；總數 &lt; 15（題庫） */
+            1: { time: 45, peopleMin: 2, peopleMax: 6, showCounts: false, label: '中等' },
             2: { time: 35, peopleMin: 2, peopleMax: 6, showCounts: false, label: '困難' }
         };
 
         const QUESTIONS_PER_GAME = 5;
-        /** 每題食物總數上限（堆上 + 各盤合計） */
-        const MAX_FOOD_TOTAL = 20;
 
-        function randomInt(lo, hi) {
-            return lo + Math.floor(Math.random() * (hi - lo + 1));
-        }
+        /**
+         * 預設題庫：key = `${難度}_${餘數模式}`，餘數模式 0=整除，1=有餘數。
+         * 每局由該池洗牌後取 5 題，(總數, 人數) 不重複。
+         * 中等／困難：食物總數皆 &lt; 15（最多 14 個）。
+         */
+        const PRESET_QUESTIONS = {
+            '0_0': [
+                { total: 2, people: 2 }, { total: 4, people: 2 }, { total: 6, people: 2 }, { total: 8, people: 2 }, { total: 10, people: 2 }
+            ],
+            '0_1': [
+                { total: 1, people: 2 }, { total: 3, people: 2 }, { total: 5, people: 2 }, { total: 7, people: 2 }, { total: 9, people: 2 }
+            ],
+            '1_0': [
+                { total: 4, people: 2 }, { total: 6, people: 2 }, { total: 8, people: 2 }, { total: 10, people: 2 },
+                { total: 12, people: 2 }, { total: 14, people: 2 },
+                { total: 6, people: 3 }, { total: 9, people: 3 }, { total: 12, people: 3 },
+                { total: 4, people: 4 }, { total: 8, people: 4 }, { total: 12, people: 4 },
+                { total: 5, people: 5 }, { total: 10, people: 5 },
+                { total: 6, people: 6 }, { total: 12, people: 6 }
+            ],
+            '1_1': [
+                { total: 5, people: 2 }, { total: 7, people: 2 }, { total: 9, people: 2 }, { total: 11, people: 2 }, { total: 13, people: 2 },
+                { total: 8, people: 3 }, { total: 10, people: 3 }, { total: 11, people: 3 }, { total: 13, people: 3 }, { total: 14, people: 3 },
+                { total: 9, people: 4 }, { total: 10, people: 4 }, { total: 11, people: 4 }, { total: 13, people: 4 }, { total: 14, people: 4 },
+                { total: 6, people: 5 }, { total: 7, people: 5 }, { total: 8, people: 5 }, { total: 9, people: 5 },
+                { total: 11, people: 5 }, { total: 12, people: 5 }, { total: 13, people: 5 }, { total: 14, people: 5 },
+                { total: 8, people: 6 }, { total: 9, people: 6 }, { total: 10, people: 6 }, { total: 11, people: 6 },
+                { total: 13, people: 6 }, { total: 14, people: 6 }
+            ],
+            '2_0': [
+                { total: 4, people: 2 }, { total: 6, people: 2 }, { total: 8, people: 2 }, { total: 10, people: 2 },
+                { total: 12, people: 2 }, { total: 14, people: 2 },
+                { total: 6, people: 3 }, { total: 9, people: 3 }, { total: 12, people: 3 },
+                { total: 4, people: 4 }, { total: 8, people: 4 }, { total: 12, people: 4 },
+                { total: 5, people: 5 }, { total: 10, people: 5 },
+                { total: 6, people: 6 }, { total: 12, people: 6 }
+            ],
+            '2_1': [
+                { total: 5, people: 2 }, { total: 7, people: 2 }, { total: 9, people: 2 }, { total: 11, people: 2 }, { total: 13, people: 2 },
+                { total: 8, people: 3 }, { total: 10, people: 3 }, { total: 11, people: 3 }, { total: 13, people: 3 }, { total: 14, people: 3 },
+                { total: 9, people: 4 }, { total: 10, people: 4 }, { total: 11, people: 4 }, { total: 13, people: 4 }, { total: 14, people: 4 },
+                { total: 6, people: 5 }, { total: 7, people: 5 }, { total: 8, people: 5 }, { total: 9, people: 5 },
+                { total: 11, people: 5 }, { total: 12, people: 5 }, { total: 13, people: 5 }, { total: 14, people: 5 },
+                { total: 8, people: 6 }, { total: 9, people: 6 }, { total: 10, people: 6 }, { total: 11, people: 6 },
+                { total: 13, people: 6 }, { total: 14, people: 6 }
+            ]
+        };
 
-        function generateOneQuestion(difficulty, remainderMode) {
-            const cfg = DIFFICULTY_CONFIG[difficulty];
-            const p = cfg.peopleMin === cfg.peopleMax
-                ? cfg.peopleMin
-                : randomInt(cfg.peopleMin, cfg.peopleMax);
-
-            const bounds = {
-                0: { minTotal: 6, maxTotal: 8, multMin: 3, multMax: 10 },
-                1: { minTotal: 8, maxTotal: 15, multMin: 3, multMax: 10 },
-                2: { minTotal: 10, maxTotal: MAX_FOOD_TOTAL, multMin: 3, multMax: 10 }
-            }[difficulty];
-
-            if (remainderMode === 0) {
-                let m = randomInt(bounds.multMin, bounds.multMax);
-                let total = p * m;
-                if (total < bounds.minTotal) total = p * Math.ceil(bounds.minTotal / p);
-                if (total > bounds.maxTotal) total = p * Math.floor(bounds.maxTotal / p);
-                if (total < p) total = p * 2;
-                return { total, people: p };
+        function shuffleArray(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const t = a[i];
+                a[i] = a[j];
+                a[j] = t;
             }
-
-            let total;
-            let guard = 0;
-            while (guard++ < 200) {
-                const q = randomInt(2, bounds.multMax);
-                const r = randomInt(1, p - 1);
-                total = p * q + r;
-                if (total >= bounds.minTotal && total <= bounds.maxTotal && total % p !== 0) {
-                    return { total, people: p };
-                }
-            }
-            const r = 1;
-            const q = Math.max(2, Math.ceil((bounds.minTotal - r) / p));
-            total = p * q + r;
-            if (total % p === 0) total += 1;
-            if (total > bounds.maxTotal) total = Math.max(bounds.minTotal, bounds.maxTotal - 1);
-            while (total > bounds.minTotal && total % p === 0) total--;
-            if (total < bounds.minTotal) total = bounds.minTotal + (bounds.minTotal % p === 0 ? 1 : 0);
-            return { total, people: p };
+            return a;
         }
 
         function buildQuestionList(difficulty, remainderMode) {
+            const key = difficulty + '_' + remainderMode;
+            const pool = PRESET_QUESTIONS[key] || [];
+            const shuffled = shuffleArray(pool);
             const list = [];
             const seen = new Set();
-            for (let i = 0; i < QUESTIONS_PER_GAME; i++) {
-                let q;
-                let tries = 0;
-                do {
-                    q = generateOneQuestion(difficulty, remainderMode);
-                    tries++;
-                } while (tries < 40 && seen.has(q.total + '-' + q.people));
-                seen.add(q.total + '-' + q.people);
-                list.push(q);
+            for (const q of shuffled) {
+                if (list.length >= QUESTIONS_PER_GAME) break;
+                if (difficulty === 0 && q.total > 10) continue;
+                if (difficulty === 0 && q.people !== 2) continue;
+                if (difficulty !== 0 && q.total >= 15) continue;
+                if (difficulty !== 0 && (q.people < 2 || q.people > 6)) continue;
+                const k = q.total + '-' + q.people;
+                if (seen.has(k)) continue;
+                if (remainderMode === 0 && q.total % q.people !== 0) continue;
+                if (remainderMode === 1 && q.total % q.people === 0) continue;
+                seen.add(k);
+                list.push({ total: q.total, people: q.people });
             }
             return list;
         }
-        const FOOD_NAME = { '🍎': '蘋果', '🍌': '香蕉', '🍓': '草莓', '🥟': '燒賣', '🍪': '曲奇' };
+        const FOOD_NAME = { '🍎': '蘋果', '🌭': '熱狗', '🍬': '糖果', '🥟': '燒賣', '🍪': '曲奇' };
         const PLATE_FACE_EMOJIS = ['👦', '👧', '🧒', '👨', '👩', '🧑', '👴', '👵'];
         const PLATE_NAMES = ['偉聰', '詠欣', '志賢', '心悅', '柏康', '可晴', '心盈', '子俊'];
-        const UNITS = { '🍎': '個', '🍌': '條', '🍓': '顆', '🥟': '顆', '🍪': '塊' };
+        const UNITS = { '🍎': '個', '🌭': '個', '🍬': '粒', '🥟': '顆', '🍪': '塊' };
 
         let currentRemainderMode = 0, currentFormulaMode = 0, currentDifficulty = 0;
         let selectedFood = '🍎', selectedFoodName = '蘋果';
@@ -1301,11 +1322,15 @@
             const el = document.getElementById('difficultyHint');
             if (!el) return;
             const c = DIFFICULTY_CONFIG[currentDifficulty];
+            const capLine = currentDifficulty === 0
+                ? '食物總數最多 10 個。'
+                : '食物總數少於 15 個（最多 14 個）。';
             const lines = [
                 `<strong>${c.label}</strong>：每題 ${c.time} 秒；人數 ${c.peopleMin === c.peopleMax ? c.peopleMin + ' 位' : c.peopleMin + '～' + c.peopleMax + ' 位（隨機）'}。`,
+                capLine,
                 c.showCounts ? '會顯示每盤食物的數量。' : '不顯示每盤食物的數量，請自己點數。'
             ];
-            el.innerHTML = lines.join('');
+            el.innerHTML = lines.join('<br>');
         }
 
         function updateActive(container, val) {
@@ -1499,6 +1524,22 @@
             }, 1000);
         }
 
+        /** 展示答案：每人盤上 correctQ 個，其餘 correctR 個留在食物堆（原盒） */
+        function distributeItemsForCorrectAnswer() {
+            const pile = document.getElementById('pile');
+            if (!pile) return;
+            const correctQ = Math.floor(totalItems / numPeople);
+            for (let p = 1; p <= numPeople; p++) {
+                const plate = document.getElementById('plate-' + p);
+                if (!plate) continue;
+                for (let j = 0; j < correctQ; j++) {
+                    const first = pile.firstElementChild;
+                    if (first) plate.appendChild(first);
+                }
+            }
+            updateCounts();
+        }
+
         function showAnswer() {
             const correctQ = Math.floor(totalItems / numPeople);
             const correctR = totalItems % numPeople;
@@ -1514,11 +1555,7 @@
                 if (currentRemainderMode === 1 && sr) sr.value = correctR;
             }
             resetGameBoard(false);
-            const plates = Array.from({ length: numPeople }, (_, i) => document.getElementById(`plate-${i + 1}`));
-            Array.from(document.getElementById('pile').children).forEach((item, i) => {
-                plates[i % numPeople].appendChild(item);
-            });
-            updateCounts();
+            distributeItemsForCorrectAnswer();
             if (hasSubmitted) {
                 const fb = document.getElementById('feedback');
                 fb.classList.add('feedback-expanded');
