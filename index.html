@@ -901,7 +901,7 @@
 
             <div id="simpleShareArea" class="division-area simple-share-area" style="display:none;">
                 <div class="division-row simple-share-row" id="simpleShareRow">
-                    <span id="simpleShareLabelSingle" class="simple-share-label">每人共分得</span>
+                    <span id="simpleShareLabelSingle" class="simple-share-label">每人分得</span>
                     <span id="simpleShareLabelQuotient" class="simple-share-label" style="display:none;">每人分得</span>
                     <div class="input-container">
                         <input id="eachShareInput" type="number" min="0" inputmode="numeric" class="input-slot"
@@ -1200,7 +1200,7 @@
         /**
          * 兩部份皆對：100 分起算 + 速度加成最多 40（可超過 100，最高 140）。
          * 未全對：只按正確比例給分（分配／第二部份各佔 50%），最高 50，不加速度分。
-         * 第二部份：有除式＝整條除式；沒除式＝「每人共分得」或（有餘數時）「每人分得＋還餘」兩數皆對。
+         * 第二部份：有除式＝整條除式；沒除式＝「每人分得」或（有餘數時）「每人分得＋還餘」兩數皆對。
          */
         function questionScoreFromAccuracyParts(distCorrect, secondPartCorrect, timeUsedSec) {
             const raw = (distCorrect ? 0.5 : 0) + (secondPartCorrect ? 0.5 : 0);
@@ -1230,7 +1230,7 @@
                 顯示分數＝各題得分<strong>平均</strong>（可超過 100）。<br>
                 · <strong>兩部份都對</strong>（分配 + 除式或填寫）：該題先給 <strong>100 分</strong>，再加速度分最多 <strong>40 分</strong>（用時越短加成越高，該題最高 140 分）。<br>
                 · <strong>未全對</strong>：只按對錯比例給分（分配、第二部份各佔一半），最高 50 分，不加速度分。<br>
-                · <strong>沒有除式</strong>：無餘數題填「每人共分得」；有餘數題須「每人分得」與「還餘」都對才算第二部份對。<br>
+                · <strong>沒有除式</strong>：無餘數題填「每人分得」；有餘數題須「每人分得」與「還餘」都對才算第二部份對。<br>
                 · <strong>有除式</strong>：須整條除式正確。<br><br>
                 <strong>稱號（配合可超過 100 的平均分）：</strong><br>
                 118 分以上 → 分物大師<br>
@@ -1636,7 +1636,7 @@
                 } else if (currentRemainderMode === 1) {
                     fb.innerHTML = `🎉 太棒了！分配與填寫都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}，還餘 ${correctR}${unit}`;
                 } else {
-                    fb.innerHTML = `🎉 太棒了！分配與「每人共分得」都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}`;
+                    fb.innerHTML = `🎉 太棒了！分配與「每人分得」都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}`;
                 }
                 document.getElementById('hintBtn').style.display = 'none';
             } else {
@@ -1709,7 +1709,7 @@
                 ? '有除式：全對則 100 分＋速度最多 40；未全對則依分配／除式對錯比例給分（各半），不加速度分。'
                 : (currentRemainderMode === 1
                     ? '沒除式（有餘數）：全對則 100＋速度最多 40；未全對則依分配與「每人分得＋還餘」對錯比例給分，不加速度分。'
-                    : '沒除式：全對則 100＋速度最多 40；未全對則依分配與「每人共分得」對錯比例給分，不加速度分。');
+                    : '沒除式：全對則 100＋速度最多 40；未全對則依分配與「每人分得」對錯比例給分，不加速度分。');
             document.getElementById('scoreBreakdown').innerHTML =
                 `「全對」<strong>${correctCount}</strong> / ${n} 題 · 平均每題用時 <strong>${avgTime}</strong> 秒<br>` +
                 `${breakdownExtra}`;
