@@ -1,1750 +1,1230 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-TW">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title> 分物練習</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>小二超級市場包裝遊戲</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
 
+        :root {
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+            --pad-x: clamp(12px, 3vw, 24px);
+        }
+
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         html {
-            height: 100%;
+            scroll-padding-top: 8px;
         }
 
         body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
-            color: #3f2a1e;
-            padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-            min-height: 100%;
+            font-family: 'Noto Sans TC', Arial, sans-serif;
+            background: linear-gradient(160deg, #e8f4fc 0%, #fdf2f7 45%, #fff5f8 100%);
+            margin: 0;
+            padding: 0 var(--pad-x) calc(20px + var(--safe-bottom));
             min-height: 100dvh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .top-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            margin: 0 calc(-1 * var(--pad-x)) 16px;
+            padding: calc(10px + var(--safe-top)) calc(14px + var(--safe-right)) 12px calc(14px + var(--safe-left));
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(255, 252, 254, 0.94) 100%);
+            border-bottom: 1px solid rgba(255, 105, 180, 0.15);
+            box-shadow: 0 4px 24px rgba(80, 40, 90, 0.07);
+            backdrop-filter: blur(12px);
+            border-radius: 0 0 18px 18px;
+        }
+
+        .toolbar-row-main {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px 14px;
+        }
+
+        .toolbar-brand {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 8px 14px;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .toolbar-title {
+            margin: 0;
+            font-size: clamp(0.9rem, 2.2vw + 0.48rem, 1.22rem);
+            font-weight: 700;
+            color: #e91e8c;
+            line-height: 1.3;
+            letter-spacing: 0.02em;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .toolbar-question-num {
+            font-size: clamp(0.82rem, 1.3vw + 0.5rem, 1rem);
+            color: #5c5c5c;
+            white-space: nowrap;
+            padding: 4px 10px;
+            background: rgba(255, 182, 193, 0.2);
+            border-radius: 999px;
+        }
+
+        .toolbar-row-stats {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding-top: 2px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .toolbar-progress {
+            color: #444;
+            font-size: clamp(0.85rem, 1.2vw + 0.55rem, 1.05rem);
+            line-height: 1.4;
+            flex: 1 1 auto;
+            min-width: min(100%, 180px);
+        }
+
+        .toolbar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px 12px;
+            flex: 0 1 auto;
+        }
+
+        .score {
+            color: #c71585;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.3vw + 0.52rem, 1.05rem);
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #fff0f8, #ffe8f3);
+            border: 1px solid rgba(255, 105, 180, 0.25);
+            border-radius: 999px;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(199, 21, 133, 0.08);
+        }
+
+        .btn-end-toolbar {
+            margin: 0;
+            min-height: 44px;
+            min-width: 44px;
+            padding: 10px 18px;
+            font-size: clamp(0.95rem, 1.2vw + 0.55rem, 1.05rem);
+            box-shadow: 0 2px 8px rgba(255, 69, 0, 0.25);
+        }
+
+        .question {
+            font-size: clamp(1.05rem, 1.8vw + 0.6rem, 1.65rem);
+            background: #fff0f5;
+            padding: clamp(12px, 2vw, 20px);
+            border-radius: 15px;
+            margin: 0 auto 12px;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+
+        #game-screen {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .game-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .game-col-main,
+        .game-col-side {
+            min-width: 0;
+        }
+
+        .objects-display {
+            font-size: clamp(1.75rem, 4vw + 0.5rem, 3rem);
+            padding: clamp(12px, 2vw, 20px);
+            min-height: 140px;
+            margin: 0 auto;
+            max-width: 800px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-content: flex-start;
+        }
+
+        .group {
+            background: #ffffe0;
+            border: 4px solid #ffd700;
+            border-radius: 18px;
+            padding: 10px 15px;
+            margin: 6px;
+        }
+
+        .remainder {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+            font-size: inherit;
+        }
+
+        .choices {
+            margin: 8px auto 0;
+            padding: 0 4px;
+            max-width: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .choice-btn {
+            font-size: clamp(1rem, 1.5vw + 0.5rem, 1.35rem);
+            padding: 14px 16px;
+            width: 100%;
+            max-width: min(420px, 100%);
+            margin: 0 auto;
+            min-height: 48px;
+            background: #fff0f5;
+            border: 3px solid #ff69b4;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        .choice-btn.correct {
+            background: #90ee90;
+            border-color: #32cd32;
+        }
+
+        .choice-btn.wrong {
+            background: #ffcccb;
+            border-color: #ff6347;
+        }
+
+        .input-area {
+            text-align: left;
+            margin: 8px 0 0;
+            max-width: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* 第2欄：被除數、商上下對齊；「=」在商的左側（第1欄第2列） */
+        .input-equation {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            align-items: center;
+            column-gap: 10px;
+            row-gap: 10px;
+            width: 100%;
+            max-width: min(420px, 100%);
+            line-height: 1.6;
+        }
+
+        .input-equation .eq-a {
+            grid-column: 2;
+            grid-row: 1;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .input-equation .eq-div {
+            grid-column: 3;
+            grid-row: 1;
+            font-size: clamp(1.2rem, 2.5vw + 0.5rem, 1.75rem);
+            font-weight: 600;
+            color: #333;
+            justify-self: center;
+        }
+
+        .input-equation .eq-b {
+            grid-column: 4;
+            grid-row: 1;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .input-equation .eq-eq {
+            grid-column: 1;
+            grid-row: 2;
+            font-size: clamp(1.2rem, 2.5vw + 0.5rem, 1.75rem);
+            font-weight: 600;
+            color: #333;
+            justify-self: end;
+            align-self: center;
+            padding-right: 2px;
+        }
+
+        .input-equation .eq-c {
+            grid-column: 2;
+            grid-row: 2;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .input-equation .remainder-input-wrap {
+            grid-column: 3 / 5;
+            grid-row: 2;
+            justify-self: start;
+            align-self: center;
+        }
+
+        .input-area input {
+            font-size: clamp(1.15rem, 2vw + 0.5rem, 1.65rem);
+            width: min(100px, 22vw);
+            max-width: 120px;
+            text-align: center;
+            margin: 4px 6px;
+            padding: 10px 8px;
+            min-height: 48px;
+            border: 3px solid #ff69b4;
+            border-radius: 10px;
+        }
+
+        .input-area .input-equation>input.eq-a,
+        .input-area .input-equation>input.eq-b,
+        .input-area .input-equation>input.eq-c {
+            width: 100%;
+            max-width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .input-area input::placeholder {
+            color: #666;
+            opacity: 1;
+            font-size: clamp(0.62rem, 1.35vw + 0.38rem, 0.82rem);
+            line-height: 1.25;
+        }
+
+        .input-area input::-webkit-input-placeholder {
+            color: #666;
+            opacity: 1;
+            font-size: clamp(0.62rem, 1.35vw + 0.38rem, 0.82rem);
+            line-height: 1.25;
+        }
+
+        /* 中等模式提示較長：加寬欄位，避免中文被裁切 */
+        .input-area.input-area--medium .input-equation>input.eq-a,
+        .input-area.input-area--medium .input-equation>input.eq-b,
+        .input-area.input-area--medium .input-equation>input.eq-c {
+            min-width: 0;
+        }
+
+        .input-area.input-area--medium .input-equation {
+            max-width: min(480px, 100%);
+        }
+
+        .input-area input#input-r {
+            width: min(72px, 18vw);
+            max-width: 90px;
+        }
+
+        .input-area.input-area--medium input#input-r {
+            width: min(120px, 32vw);
+            max-width: 140px;
+        }
+
+        .remainder-input-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .remainder-input-wrap .ellipsis-before {
+            font-size: clamp(1.25rem, 2vw + 0.65rem, 1.75rem);
+            color: #333;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .feedback {
+            font-size: clamp(1rem, 1.5vw + 0.55rem, 1.45rem);
+            min-height: 52px;
+            margin: 10px auto;
+            text-align: center;
+            max-width: 800px;
+        }
+
+        button.action {
+            font-size: clamp(1rem, 1.5vw + 0.5rem, 1.2rem);
+            padding: 12px 28px;
+            margin: 8px 4px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            min-height: 48px;
             touch-action: manipulation;
         }
 
-        body.game-active {
-            overflow: hidden;
-            height: 100dvh;
-            max-height: 100dvh;
-            padding: 0;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        h1 {
-            font-size: clamp(2.25rem, 6.2vw, 3.35rem);
-            color: #c2410f;
-            line-height: 1.2;
-        }
-
-        .setup-hint {
+        .game-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             margin-top: 8px;
-            font-size: clamp(0.85rem, 2.2vw, 1rem);
-            color: #78716c;
-            line-height: 1.45;
-            max-width: 36em;
+        }
+
+        .btn-next {
+            background: #1e90ff;
+            color: white;
+        }
+
+        .btn-next:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn-end {
+            background: #ff4500;
+            color: white;
+        }
+
+        .btn-submit {
+            background: #32cd32;
+            color: white;
+        }
+
+        /* iPad landscape & wide tablets: two columns */
+        @media (orientation: landscape) and (min-width: 700px) {
+            .game-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(280px, 1fr);
+                gap: 16px 20px;
+                align-items: start;
+            }
+
+            .objects-display {
+                min-height: 120px;
+                margin: 0;
+            }
+
+            .choices {
+                margin-top: 0;
+            }
+
+            .feedback {
+                min-height: 44px;
+            }
+        }
+
+        @media (orientation: landscape) and (min-width: 700px) and (max-height: 520px) {
+            .top-toolbar {
+                gap: 6px;
+                margin-bottom: 10px;
+                padding-top: calc(6px + var(--safe-top));
+            }
+
+            .toolbar-title {
+                font-size: 0.95rem;
+            }
+
+            .toolbar-question-num {
+                font-size: 0.8rem;
+            }
+
+            .toolbar-progress {
+                font-size: 0.8rem;
+            }
+
+            .objects-display {
+                min-height: 88px;
+                padding: 8px;
+            }
+        }
+
+        #end-screen {
+            padding: 16px var(--pad-x);
+            max-width: 640px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        .difficulty-hint {
-            text-align: center;
-            font-size: clamp(0.8rem, 2vw, 0.95rem);
-            color: #78716c;
-            line-height: 1.45;
-            max-width: 40em;
-            margin: 0 auto 12px;
-            min-height: 2.8em;
+        #end-screen h2 {
+            font-size: clamp(1.25rem, 3vw, 1.75rem);
         }
 
-        .setup-panel,
-        .result-panel {
-            max-width: 950px;
-            margin: 12px auto;
-            background: white;
-            border-radius: 20px;
-            padding: clamp(16px, 3vw, 28px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        .history-section {
+            text-align: left;
+            margin: 24px auto;
+            max-width: 560px;
+            font-size: clamp(0.88rem, 1.4vw + 0.45rem, 1rem);
         }
 
-        .section-title {
-            text-align: center;
-            font-size: clamp(1.1rem, 2.8vw, 1.45rem);
-            color: #854d0e;
-            margin: 16px 0 10px;
+        .history-section h3 {
+            font-size: clamp(1rem, 1.8vw + 0.5rem, 1.2rem);
+            margin: 0 0 12px 0;
+            color: #444;
         }
 
-        .choice-grid {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 14px;
-        }
-
-        .choice-btn {
-            background: white;
-            border: 4px solid #ff9f1c;
-            color: #c2410f;
-            font-size: clamp(1rem, 2.8vw, 1.35rem);
-            font-weight: 700;
-            padding: 14px 22px;
-            border-radius: 18px;
-            cursor: pointer;
-            min-width: min(200px, 42vw);
-            min-height: 48px;
-            transition: all 0.2s;
-        }
-
-        .choice-btn:hover,
-        .choice-btn.active {
-            transform: scale(1.03);
-            background: #ff9f1c;
-            color: white;
-        }
-
-        .food-select {
-            text-align: center;
-            margin: 14px 0;
-        }
-
-        .food-option {
-            font-size: clamp(3.1rem, 10vw, 5.25rem);
-            margin: 6px;
-            cursor: pointer;
-            padding: min(18px, 3vw);
-            min-width: 76px;
-            min-height: 76px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 18px;
-            transition: all 0.2s;
-        }
-
-        .food-option.selected {
-            background: #fefce8;
-            transform: scale(1.12);
-            box-shadow: 0 8px 20px rgba(255, 159, 28, 0.45);
-        }
-
-        .start-btn {
-            display: block;
-            margin: 18px auto;
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 16px 48px;
-            font-size: clamp(1.2rem, 3.5vw, 1.5rem);
-            font-weight: 700;
-            border-radius: 9999px;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #166534;
-            min-height: 52px;
-        }
-
-        /* —— 遊戲區：橫向 iPad 一屏為主 —— */
-        .game-shell {
-            flex-direction: column;
-            height: 100dvh;
-            max-height: 100dvh;
-            padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-            gap: 6px;
-            overflow: hidden;
-        }
-
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: stretch;
-            flex-wrap: wrap;
-            gap: 8px;
-            flex-shrink: 0;
-            background: white;
-            padding: 8px 12px;
-            border-radius: 14px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-
-        .progress {
-            font-size: clamp(0.85rem, 2vmin, 1.15rem);
-            font-weight: 700;
-            color: #854d0e;
-            display: flex;
-            align-items: center;
-            flex: 0 1 auto;
-            min-width: 0;
-            max-width: 100%;
-            line-height: 1.25;
-        }
-
-        .timer {
-            font-size: clamp(0.9rem, 2.4vmin, 1.35rem);
-            font-weight: 700;
-            color: #b91c1c;
-            background: #fee2e2;
-            padding: 8px 14px;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            flex: 0 0 auto;
-            min-height: 44px;
-            max-width: 100%;
-            box-sizing: border-box;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .math-box {
-            background: #fffbeb;
-            border: 3px solid #f59e0b;
-            border-radius: 12px;
-            padding: 8px 10px;
-            text-align: center;
-            font-size: clamp(0.78rem, 2vmin, 1.08rem);
-            line-height: 1.35;
-            flex: 1 1 200px;
-            min-width: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-            hyphens: auto;
-        }
-
-        .game-body {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            overflow: hidden;
-        }
-
-        .main-game {
-            display: flex;
-            flex-direction: row;
-            flex: 1;
-            min-height: 0;
-            gap: 10px;
-            align-items: stretch;
-        }
-
-        .plates-container {
-            flex: 1;
-            min-width: 0;
-            min-height: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(200px, 28vw), 1fr));
-            gap: 8px;
-            align-content: start;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 2px;
-        }
-
-        .plate {
-            background: white;
-            border-radius: 12px;
-            padding: 8px 10px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .plate-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            color: #854d0e;
-            flex: 0 0 auto;
-            max-width: 100%;
-        }
-
-        .plate-face {
-            font-size: clamp(1.75rem, 5.4vmin, 2.75rem);
-            line-height: 1;
-            flex-shrink: 0;
-        }
-
-        .plate-label-text {
-            font-size: clamp(1.05rem, 2.95vmin, 1.52rem);
-        }
-
-        .dropzone {
-            flex: 1 1 100px;
-            min-width: 0;
-            min-height: clamp(64px, 14vh, 108px);
-            background: #fefce8;
-            border: 3px dashed #f59e0b;
-            border-radius: 10px;
-            padding: 6px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-            align-content: flex-start;
-        }
-
-        .dropzone.dragover {
-            background: #ecfccb;
-            border-color: #65a30d;
-        }
-
-        .count {
-            font-size: clamp(0.9rem, 2.3vmin, 1.25rem);
-            font-weight: 700;
-            color: #15803d;
-            background: #ecfccb;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            flex: 0 0 auto;
-            min-width: 2.25em;
-            text-align: center;
-            box-sizing: border-box;
-            font-variant-numeric: tabular-nums;
-            max-width: 100%;
-        }
-
-        .pile-panel {
-            width: clamp(160px, 22vw, 240px);
-            flex-shrink: 0;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            max-height: 100%;
-        }
-
-        .pile-header {
-            flex-shrink: 0;
-            margin-bottom: 6px;
-            text-align: center;
-        }
-
-        .area-title {
-            font-size: clamp(1.2rem, 3.2vmin, 1.55rem);
-            font-weight: 700;
-            color: #854d0e;
-            text-align: center;
-        }
-
-        .pile-count-badge {
-            font-size: clamp(0.72rem, 1.8vmin, 0.95rem);
-            font-weight: 700;
-            color: #15803d;
-            margin-top: 4px;
-            padding: 4px 8px;
-            background: #ecfccb;
-            border-radius: 9999px;
-            display: inline-block;
-            max-width: 100%;
-            box-sizing: border-box;
-            overflow-wrap: anywhere;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .game-shell.hide-counts-mode .count,
-        .game-shell.hide-counts-mode .pile-count-badge {
-            display: none !important;
-        }
-
-        .pile {
-            flex: 1;
-            min-height: 0;
-            background: #fefce8;
-            border: 3px dashed #f59e0b;
-            border-radius: 12px;
-            padding: 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-            align-content: flex-start;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .siumai-item {
-            font-size: clamp(2.1rem, 5.5vmin, 3.5rem);
-            cursor: grab;
-            user-select: none;
-            touch-action: none;
-            line-height: 1;
-            border-radius: 8px;
-            transition: transform 0.12s ease, box-shadow 0.12s ease;
-        }
-
-        .touch-pick-mode .siumai-item {
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-
-        .siumai-item.picked {
-            outline: 3px solid #65a30d;
-            outline-offset: 2px;
-            box-shadow: 0 0 0 4px rgba(101, 163, 13, 0.35);
-            transform: scale(1.08);
-            z-index: 2;
-            position: relative;
-        }
-
-        .move-hint {
-            flex-shrink: 0;
-            margin: 0;
-            padding: 6px 10px;
-            font-size: clamp(1rem, 2.5vmin, 1.15rem);
-            color: #78716c;
-            text-align: center;
-            line-height: 1.35;
-            background: rgba(255, 255, 255, 0.75);
-            border-radius: 10px;
-            max-width: 100%;
-            overflow-wrap: anywhere;
-            box-sizing: border-box;
-        }
-
-        .move-hint.move-hint--hidden {
-            display: none;
-            margin: 0;
-            padding: 0;
-            min-height: 0;
-        }
-
-        .division-area {
-            background: #fefce8;
-            border: 3px solid #f59e0b;
-            border-radius: 12px;
-            padding: 8px 10px;
-            margin: 0;
-            max-width: none;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .division-formula-hint {
-            font-size: clamp(0.95rem, 2.6vmin, 1.25rem);
-            font-weight: 700;
-            color: #854d0e;
-            line-height: 1.35;
-            margin: 0 0 8px;
-            padding: 0 4px;
-        }
-
-        .division-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 4px 0;
-            font-size: clamp(1.1rem, 3vmin, 1.65rem);
-        }
-
-        .simple-share-row {
-            gap: 10px;
-        }
-
-        .simple-share-label {
-            font-weight: 700;
-            color: #854d0e;
-            font-size: clamp(1rem, 2.6vmin, 1.35rem);
-            white-space: nowrap;
-        }
-
-        .simple-share-unit {
-            font-weight: 700;
-            color: #c2410f;
-            font-size: clamp(1.1rem, 2.8vmin, 1.5rem);
-            min-width: 1.5em;
-        }
-
-        .simple-share-connector {
-            font-weight: 700;
-            color: #854d0e;
-            font-size: clamp(0.95rem, 2.5vmin, 1.25rem);
-            white-space: nowrap;
-        }
-
-        .input-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .input-slot {
-            box-sizing: border-box;
-            width: clamp(5.25rem, 32vw, 11rem);
-            min-width: 5rem;
-            max-width: 100%;
-            min-height: clamp(52px, 14vmin, 96px);
-            height: clamp(52px, 14vmin, 96px);
-            padding: 8px 12px;
-            font-size: clamp(1.2rem, 4.2vmin, 2.15rem);
-            text-align: center;
-            line-height: 1.1;
-            border: 3px solid #f59e0b;
-            border-radius: 14px;
-            background: white;
-            outline: none;
-            font-variant-numeric: tabular-nums;
-        }
-
-        input.input-slot[type="number"] {
-            appearance: textfield;
-            -moz-appearance: textfield;
-        }
-
-        input.input-slot[type="number"]::-webkit-outer-spin-button,
-        input.input-slot[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .input-slot:focus {
-            border-color: #65a30d;
-            box-shadow: 0 0 10px rgba(101, 163, 13, 0.5);
-        }
-
-        .operator {
-            font-size: clamp(1.25rem, 3.2vmin, 2rem);
-            font-weight: bold;
-            color: #c2410f;
-            padding: 0 4px;
-        }
-
-        .game-actions {
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-height: 0;
-        }
-
-        .controls {
-            text-align: center;
-            margin: 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        button {
-            background: #ff9f1c;
-            color: white;
-            border: none;
-            padding: 12px 22px;
-            font-size: clamp(0.95rem, 2.4vmin, 1.25rem);
-            font-weight: 700;
-            border-radius: 9999px;
-            cursor: pointer;
-            box-shadow: 0 5px 0 #c2410f;
-            min-height: 48px;
-            min-width: 44px;
-        }
-
-        button:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #c2410f;
-        }
-
-        button:disabled {
-            background: #94a3b8;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        .feedback {
-            font-size: clamp(0.85rem, 2.2vmin, 1.15rem);
-            padding: 10px 14px;
-            border-radius: 14px;
-            margin: 0 auto;
-            text-align: center;
-            font-weight: 700;
-            display: none;
-            max-height: clamp(52px, 16vh, 100px);
+        .history-list {
+            max-height: min(50vh, 320px);
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            line-height: 1.35;
-            max-width: 100%;
-            box-sizing: border-box;
-            overflow-wrap: anywhere;
-            word-break: break-word;
+            border: 1px solid rgba(255, 105, 180, 0.25);
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.6);
         }
 
-        .feedback.feedback-expanded {
-            max-height: min(36vh, 240px);
-            text-align: left;
-            font-weight: 600;
+        .history-item {
+            padding: 8px 6px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            line-height: 1.45;
         }
 
-        .next-row {
-            text-align: center;
-            margin: 0;
-            flex-shrink: 0;
-        }
-
-        .next-row button {
-            min-height: 48px;
-        }
-
-        @media (orientation: landscape) and (max-height: 520px) {
-            .game-shell {
-                gap: 4px;
-            }
-
-            .dropzone {
-                min-height: clamp(52px, 22vh, 88px);
-            }
-
-            .feedback {
-                max-height: clamp(44px, 20vh, 80px);
-                padding: 6px 10px;
-            }
-
-            .feedback.feedback-expanded {
-                max-height: min(42vh, 200px);
-            }
-        }
-
-        /* Result Panel */
-        .result-panel {
-            text-align: center;
-        }
-
-        .score-circle {
-            width: 180px;
-            height: 180px;
-            margin: 20px auto;
-            border-radius: 50%;
-            border: 12px solid #f59e0b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #c2410f;
-        }
-
-        .grade-title {
-            font-size: 2.2rem;
-            margin: 15px 0;
-            color: #854d0e;
-        }
-
-        .result-list {
-            text-align: left;
-            max-width: 600px;
-            margin: 30px auto;
-            background: #fffbeb;
-            padding: 20px;
-            border-radius: 20px;
-        }
-
-        .result-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #fcd34d;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .result-item:last-child {
+        .history-item:last-child {
             border-bottom: none;
         }
 
-        .result-item-meta {
-            display: block;
-            font-size: 0.88em;
-            font-weight: 600;
-            color: #78716c;
+        .history-item.ok {
+            color: #2e7d32;
+        }
+
+        .history-item.bad {
+            color: #c62828;
+        }
+
+        .history-item .meta {
+            font-size: 0.9em;
+            color: #666;
             margin-top: 4px;
         }
 
-        .result-dim {
-            display: block;
-            margin-top: 4px;
-            font-size: 0.95em;
+        .end-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
         }
 
-        .correct {
-            color: #15803d;
-        }
-
-        .wrong {
-            color: #b91c1c;
-        }
-
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            margin-left: 8px;
-            cursor: pointer;
-        }
-
-        /* 結果頁評分說明：固定於畫面中央，可捲動，避免被 overflow 裁切 */
-        .result-panel .tooltip .tooltiptext {
-            visibility: hidden;
-            opacity: 0;
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: min(400px, calc(100vw - 28px));
-            max-width: calc(100vw - 28px);
-            max-height: min(78vh, 520px);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            margin: 0;
-            bottom: auto;
-            z-index: 10000;
-            background: #3f2a1e;
-            color: #fff;
-            text-align: left;
-            border-radius: 14px;
-            padding: 16px 18px;
-            font-size: clamp(0.82rem, 2.1vmin, 1rem);
-            line-height: 1.55;
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            transition: opacity 0.2s ease;
-        }
-
-        .result-panel .tooltip:hover .tooltiptext,
-        .result-panel .tooltip:focus-within .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .tooltip>span:first-child {
-            outline: none;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 24px;
-            color: #854d0e;
-            font-size: 1.35rem;
-            line-height: 1.5;
-        }
-
-        body.game-active .footer {
-            display: none;
-        }
-
-        .score-breakdown {
-            font-size: clamp(0.9rem, 2.2vmin, 1.05rem);
-            color: #57534e;
-            margin: 12px auto 0;
-            max-width: 520px;
-            line-height: 1.55;
-        }
-
-        .result-mode-summary {
-            font-size: clamp(0.9rem, 2.4vmin, 1.08rem);
-            color: #44403c;
-            line-height: 1.55;
-            margin: 10px auto 14px;
-            max-width: 520px;
-            padding: 10px 14px;
-            background: #fffbeb;
-            border-radius: 12px;
-            border: 2px solid #fde68a;
-        }
-
-        .result-mode-summary .result-mode-line {
-            margin: 4px 0 0;
-        }
-
-        .result-mode-summary strong {
-            color: #854d0e;
-        }
-
-        .result-panel.compact-landscape {
-            max-height: min(100dvh, 100vh);
-            overflow-y: auto;
-            margin: 8px auto;
-            padding: 16px 20px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .result-panel .score-circle {
-            width: clamp(120px, 22vmin, 160px);
-            height: clamp(120px, 22vmin, 160px);
-            font-size: clamp(2rem, 6vmin, 2.8rem);
-            border-width: 8px;
-            margin: 12px auto;
-        }
-
-        .result-panel h1 {
-            font-size: clamp(2rem, 5.8vmin, 2.75rem) !important;
-            line-height: 1.25;
-        }
-
-        .result-panel .grade-title {
-            font-size: clamp(1.15rem, 3.5vmin, 1.65rem);
+        .btn-redo-wrong {
+            background: #ff9800 !important;
+            color: #fff !important;
         }
     </style>
 </head>
 
 <body>
-    <!-- Setup Panel -->
-    <div id="setupPanel" class="setup-panel">
-        <div class="header">
-            <h1>🍎 分物練習 🍎 </h1>
-            <p class="setup-hint">建議使用<strong>橫向</strong>畫面，遊戲時較少捲動、較好操作。</p>
+    <header class="top-toolbar" role="banner">
+        <div class="toolbar-row-main">
+            <div class="toolbar-brand">
+                <h1 class="toolbar-title">🛒 小二超級市場包裝遊戲 🛒</h1>
+                <span class="toolbar-question-num">第 <span id="question-num">1</span> 題</span>
+            </div>
+            <div class="toolbar-actions">
+                <span class="score">分數: <span id="score">0</span></span>
+                <button type="button" id="btn-end-game" class="action btn-end btn-end-toolbar"
+                    onclick="endGame()">結束遊戲</button>
+            </div>
         </div>
-
-        <div class="section-title">1. 餘數模式</div>
-        <div class="choice-grid" id="remainderChoices">
-            <button class="choice-btn active" data-remainder="0" onclick="selectRemainder(0)">沒有餘數</button>
-            <button class="choice-btn" data-remainder="1" onclick="selectRemainder(1)">有餘數</button>
+        <div class="toolbar-row-stats">
+            <div class="toolbar-progress">
+                正確: <span id="correct-count">0</span>　連續: <span id="streak">0</span><span
+                    id="streak-suffix">/5</span>　模式: <span id="mode-name">簡單</span>
+            </div>
         </div>
-        <div class="section-title">2. 除式模式</div>
-        <div class="choice-grid" id="formulaChoices">
-            <button class="choice-btn active" data-formula="0" onclick="selectFormula(0)">沒有除式</button>
-            <button class="choice-btn" data-formula="1" onclick="selectFormula(1)">有除式</button>
-        </div>
-        <div class="section-title">3. 難度模式</div>
-        <p class="difficulty-hint" id="difficultyHint"></p>
-        <div class="choice-grid" id="difficultyChoices">
-            <button type="button" class="choice-btn active" data-diff="0" onclick="selectDifficulty(0)">簡單</button>
-            <button type="button" class="choice-btn" data-diff="1" onclick="selectDifficulty(1)">中等 </button>
-            <button type="button" class="choice-btn" data-diff="2" onclick="selectDifficulty(2)">困難 </button>
-        </div>
+    </header>
 
-        <div class="food-select">
-            <p style="margin-bottom:15px;color:#854d0e;font-size:1.3rem;">4. 選擇要分的食物</p>
-            <span class="food-option" data-food="🍎" onclick="selectFood(this)">🍎</span>
-            <span class="food-option" data-food="🌭" onclick="selectFood(this)">🌭</span>
-            <span class="food-option" data-food="🍬" onclick="selectFood(this)">🍬</span>
-            <span class="food-option" data-food="🥟" onclick="selectFood(this)">🥟</span>
-            <span class="food-option" data-food="🍪" onclick="selectFood(this)">🍪</span>
-        </div>
-
-        <button id="startGameBtn" class="start-btn" onclick="startGame()" disabled>開始遊戲</button>
-    </div>
-
-    <!-- Game Area（橫向一屏：主遊戲區可捲動，其餘固定） -->
-    <div id="gameArea" class="game-shell" style="display:none;">
-        <div class="game-header">
-            <div class="progress">第 <span id="currentQ">1</span> / 5 題</div>
-            <div class="timer" id="timer">60 秒</div>
-            <div class="math-box" id="questionBox"></div>
-        </div>
-
-        <p class="move-hint" id="moveHint" aria-live="polite"></p>
-
-        <div class="game-body">
-            <div class="main-game">
-                <div class="plates-container" id="platesContainer"></div>
-                <div class="pile-panel">
-                    <div class="pile-header">
-                        <div class="area-title" id="pileTitle">蘋果</div>
-                        <div class="pile-count-badge" id="pileCountBadge" aria-live="polite">0</div>
-                    </div>
-                    <div id="pile" class="pile"></div>
+    <div id="game-screen">
+        <div class="game-layout">
+            <div class="game-col game-col-main">
+                <div class="question">
+                    有 <strong id="total-show">12</strong> <span id="unit-show">個</span>
+                    <span id="product-show">蘋果 🍎</span>，每 <strong id="per-show">3</strong> <span
+                        id="unit-show2">個</span> 分成一份，可分成幾份？
                 </div>
+                <div id="objects-display" class="objects-display"></div>
             </div>
 
-            <div id="divisionArea" class="division-area" style="display:none;">
-                <div id="divisionFormulaHint" class="division-formula-hint" style="display:none;"></div>
-                <div class="division-row">
-                    <div class="input-container">
-                        <input id="totalInput" type="number" min="0" inputmode="numeric" class="input-slot"
-                            placeholder="?" autocomplete="off">
+            <div class="game-col game-col-side">
+                <div id="easy-choices" class="choices"></div>
+
+                <div id="input-area" class="input-area" style="display:none;">
+                    <div class="input-equation">
+                        <input type="text" id="input-a" class="eq-a" inputmode="numeric" autocomplete="off"
+                            aria-label="總數">
+                        <span class="eq-div" aria-hidden="true">÷</span>
+                        <input type="text" id="input-b" class="eq-b" inputmode="numeric" autocomplete="off"
+                            aria-label="每份數">
+                        <span class="eq-eq" aria-hidden="true">=</span>
+                        <input type="text" id="input-c" class="eq-c" inputmode="numeric" autocomplete="off"
+                            aria-label="商（份數）">
+                        <span id="remainder-input-wrap" class="remainder-input-wrap" style="display:none;" hidden>
+                            <span class="ellipsis-before" aria-hidden="true">…</span>
+                            <input type="text" id="input-r" inputmode="numeric" autocomplete="off" aria-label="餘數">
+                        </span>
                     </div>
-                    <span class="operator">÷</span>
-                    <div class="input-container">
-                        <input id="peopleInput" type="number" min="0" inputmode="numeric" class="input-slot"
-                            placeholder="?" autocomplete="off">
-                    </div>
-                    <span class="operator">=</span>
-                    <div class="input-container">
-                        <input id="quotientInput" type="number" min="0" inputmode="numeric" class="input-slot"
-                            placeholder="?" autocomplete="off">
-                    </div>
-                    <div id="remainderPart" style="display:none; align-items:center; gap:8px; flex-wrap:wrap;">
-                        <span class="operator">......</span>
-                        <div class="input-container">
-                            <input id="remainderInput" type="number" min="0" inputmode="numeric" class="input-slot"
-                                placeholder="?" autocomplete="off">
-                        </div>
-                    </div>
+                    <br><br>
+                    <button type="button" id="submit-btn" class="action btn-submit" onclick="checkInput()">提交答案</button>
                 </div>
-            </div>
 
-            <div id="simpleShareArea" class="division-area simple-share-area" style="display:none;">
-                <div class="division-row simple-share-row" id="simpleShareRow">
-                    <span id="simpleShareLabelSingle" class="simple-share-label">每人分得</span>
-                    <span id="simpleShareLabelQuotient" class="simple-share-label" style="display:none;">每人分得</span>
-                    <div class="input-container">
-                        <input id="eachShareInput" type="number" min="0" inputmode="numeric" class="input-slot"
-                            placeholder="?" autocomplete="off" title="每人分到的數量（商）">
-                    </div>
-                    <span id="eachShareUnit" class="simple-share-unit" aria-hidden="true"></span>
-                    <span id="simpleShareRemConnector" class="simple-share-connector" style="display:none;">，還餘</span>
-                    <div id="simpleRemainderInputWrap" class="input-container" style="display:none;">
-                        <input id="simpleRemainderInput" type="number" min="0" inputmode="numeric" class="input-slot"
-                            placeholder="?" autocomplete="off" title="分完後食物堆剩下的數量（餘數）">
-                    </div>
-                    <span id="simpleRemainderUnit" class="simple-share-unit" style="display:none;"
-                        aria-hidden="true"></span>
+                <div id="feedback" class="feedback"></div>
+
+                <div class="game-actions">
+                    <button type="button" class="btn-next action" onclick="nextQuestion()" id="next-btn">下一題</button>
                 </div>
-            </div>
-        </div>
-
-        <div class="game-actions">
-            <div class="controls">
-                <button type="button" id="submitBtn" onclick="submitAnswer()">✅ 提交答案</button>
-                <button type="button" id="hintBtn" onclick="showAnswer()" style="background:#64748b; display:none;">📋
-                    展示答案</button>
-                <button type="button" id="resetBtn" onclick="resetDistribution()" style="background:#64748b;">🔄
-                    重置分配</button>
-            </div>
-            <div id="feedback" class="feedback"></div>
-            <div class="next-row">
-                <button type="button" onclick="nextQuestion()" id="nextBtn"
-                    style="display:none;background:#10b981;padding:12px 36px;font-size:clamp(1rem,2.5vmin,1.25rem);">
-                    下一題 →
-                </button>
             </div>
         </div>
     </div>
 
-    <!-- Result Panel -->
-    <div id="resultPanel" class="result-panel compact-landscape" style="display:none;">
-        <h1 style="color:#c2410f;">🎉 練習完成！</h1>
-        <div id="resultModeSummary" class="result-mode-summary" role="status" aria-label="本局設定"></div>
-        <div class="score-circle" id="scoreCircle">100</div>
-        <div class="grade-title" id="gradeTitle">分物大師</div>
-        <div id="scoreBreakdown" class="score-breakdown"></div>
-
-        <div style="margin:12px 0 8px;">
-            <strong>總用時：</strong> <span id="totalTime">0</span> 秒
-            <span style="color:#78716c;">（每題上限 <span id="timeCapLabel">60</span> 秒）</span>
+    <!-- 結束畫面 -->
+    <div id="end-screen" style="display:none; text-align:center; margin-top:40px;">
+        <h2>🎉 遊戲結束！</h2>
+        <div style="font-size:48px; margin:30px 0;">
+            總分 <strong id="final-score" style="color:#ff1493;"></strong>
         </div>
-
-        <div class="result-list">
-            <h3 style="margin-bottom:15px;">每題表現</h3>
-            <div id="resultList"></div>
+        <p style="font-size:28px;">
+            正確題數：<strong id="final-correct"></strong> / <strong id="final-total"></strong><br>
+            正確率：<strong id="final-percent"></strong>
+        </p>
+        <p id="final-grade" style="font-size:26px; margin:20px 0;"></p>
+        <div class="history-section">
+            <h3>📋 作答紀錄</h3>
+            <div id="history-list" class="history-list"></div>
         </div>
-
-        <button onclick="restartGame()" class="start-btn" style="background:#10b981; margin-top:20px;">
-            再玩一次
-        </button>
+        <div class="end-actions">
+            <button type="button" id="btn-redo-wrong" class="action btn-redo-wrong"
+                style="display:none; font-size:clamp(1rem,2.5vw,1.25rem); padding:14px clamp(20px,6vw,40px); min-height:48px;"
+                onclick="redoWrongQuestions()">重做錯題</button>
+            <button type="button" class="action" onclick="restartGame()"
+                style="background:#32cd32; font-size:clamp(1rem,2.5vw,1.25rem); padding:14px clamp(24px,8vw,50px); min-height:48px;">再玩一次</button>
+        </div>
     </div>
-
-    <div class="footer">❤️ 2A同學加油！</div>
 
     <script>
-        // ==================== Config ====================
-        /** 簡單：60 秒。中等：45 秒。困難：35 秒。 */
-        const DIFFICULTY_CONFIG = {
-            /** 簡單：食物總數題庫皆 ≤10；人數固定 2 位 */
-            0: { time: 60, peopleMin: 2, peopleMax: 2, showCounts: true, label: '簡單' },
-            /** 中等／困難：人數 2～6 位；總數 &lt; 15（題庫） */
-            1: { time: 45, peopleMin: 2, peopleMax: 6, showCounts: false, label: '中等' },
-            2: { time: 35, peopleMin: 2, peopleMax: 6, showCounts: false, label: '困難' }
-        };
+        let currentMode = 'easy';
+        let totalScore = 0;
+        let questionCount = 0;
+        let correctCount = 0;
+        let streak = 0;
+        let currentTotal = 0;
+        let currentPer = 0;
+        let currentRemainder = 0;
+        let currentProduct = {};
+        let correctQuotient = 0;
+        let pointsPerQuestion = 10;
+        let hasAnswered = false;
+        let questionHistory = [];
+        let sessionSnapshot = null;
+        let redoMode = false;
+        let redoQueue = [];
+        let redoIndex = 0;
 
-        const QUESTIONS_PER_GAME = 5;
+        const supermarketProducts = [
+            { name: "蘋果汁", emoji: "🧃", unit: "包" },
+            { name: "香蕉", emoji: "🍌", unit: "條" },
+            { name: "番茄罐頭", emoji: "🥫", unit: "罐" },
+            { name: "糖果", emoji: "🍬", unit: "粒" },
+            { name: "餅乾", emoji: "🍪", unit: "塊" },
+            { name: "牙刷", emoji: "🪥", unit: "支" },
+            { name: "蛋糕", emoji: "🍰", unit: "件" },
+            { name: "雞蛋", emoji: "🥚", unit: "隻" },
+            { name: "薯仔", emoji: "🥔", unit: "個" },
+            { name: "調味料", emoji: "🧂", unit: "瓶" }
+        ];
 
-        /**
-         * 預設題庫：key = `${難度}_${餘數模式}`，餘數模式 0=整除，1=有餘數。
-         * 每局由該池洗牌後取 5 題，(總數, 人數) 不重複。
-         * 中等／困難：食物總數皆 &lt; 15（最多 14 個）。
-         */
-        const PRESET_QUESTIONS = {
-            '0_0': [
-                { total: 2, people: 2 }, { total: 4, people: 2 }, { total: 6, people: 2 }, { total: 8, people: 2 }, { total: 10, people: 2 }
-            ],
-            '0_1': [
-                { total: 1, people: 2 }, { total: 3, people: 2 }, { total: 5, people: 2 }, { total: 7, people: 2 }, { total: 9, people: 2 }
-            ],
-            '1_0': [
-                { total: 4, people: 2 }, { total: 6, people: 2 }, { total: 8, people: 2 }, { total: 10, people: 2 },
-                { total: 12, people: 2 }, { total: 14, people: 2 },
-                { total: 6, people: 3 }, { total: 9, people: 3 }, { total: 12, people: 3 },
-                { total: 4, people: 4 }, { total: 8, people: 4 }, { total: 12, people: 4 },
-                { total: 5, people: 5 }, { total: 10, people: 5 },
-                { total: 6, people: 6 }, { total: 12, people: 6 }
-            ],
-            '1_1': [
-                { total: 5, people: 2 }, { total: 7, people: 2 }, { total: 9, people: 2 }, { total: 11, people: 2 }, { total: 13, people: 2 },
-                { total: 8, people: 3 }, { total: 10, people: 3 }, { total: 11, people: 3 }, { total: 13, people: 3 }, { total: 14, people: 3 },
-                { total: 9, people: 4 }, { total: 10, people: 4 }, { total: 11, people: 4 }, { total: 13, people: 4 }, { total: 14, people: 4 },
-                { total: 6, people: 5 }, { total: 7, people: 5 }, { total: 8, people: 5 }, { total: 9, people: 5 },
-                { total: 11, people: 5 }, { total: 12, people: 5 }, { total: 13, people: 5 }, { total: 14, people: 5 },
-                { total: 8, people: 6 }, { total: 9, people: 6 }, { total: 10, people: 6 }, { total: 11, people: 6 },
-                { total: 13, people: 6 }, { total: 14, people: 6 }
-            ],
-            '2_0': [
-                { total: 4, people: 2 }, { total: 6, people: 2 }, { total: 8, people: 2 }, { total: 10, people: 2 },
-                { total: 12, people: 2 }, { total: 14, people: 2 },
-                { total: 6, people: 3 }, { total: 9, people: 3 }, { total: 12, people: 3 },
-                { total: 4, people: 4 }, { total: 8, people: 4 }, { total: 12, people: 4 },
-                { total: 5, people: 5 }, { total: 10, people: 5 },
-                { total: 6, people: 6 }, { total: 12, people: 6 }
-            ],
-            '2_1': [
-                { total: 5, people: 2 }, { total: 7, people: 2 }, { total: 9, people: 2 }, { total: 11, people: 2 }, { total: 13, people: 2 },
-                { total: 8, people: 3 }, { total: 10, people: 3 }, { total: 11, people: 3 }, { total: 13, people: 3 }, { total: 14, people: 3 },
-                { total: 9, people: 4 }, { total: 10, people: 4 }, { total: 11, people: 4 }, { total: 13, people: 4 }, { total: 14, people: 4 },
-                { total: 6, people: 5 }, { total: 7, people: 5 }, { total: 8, people: 5 }, { total: 9, people: 5 },
-                { total: 11, people: 5 }, { total: 12, people: 5 }, { total: 13, people: 5 }, { total: 14, people: 5 },
-                { total: 8, people: 6 }, { total: 9, people: 6 }, { total: 10, people: 6 }, { total: 11, people: 6 },
-                { total: 13, people: 6 }, { total: 14, people: 6 }
-            ]
-        };
-
-        function shuffleArray(arr) {
-            const a = arr.slice();
-            for (let i = a.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                const t = a[i];
-                a[i] = a[j];
-                a[j] = t;
-            }
-            return a;
+        function pointsForMode(mode) {
+            if (mode === 'easy') return 10;
+            if (mode === 'medium') return 20;
+            return 30;
         }
 
-        function buildQuestionList(difficulty, remainderMode) {
-            const key = difficulty + '_' + remainderMode;
-            const pool = PRESET_QUESTIONS[key] || [];
-            const shuffled = shuffleArray(pool);
-            const list = [];
-            const seen = new Set();
-            for (const q of shuffled) {
-                if (list.length >= QUESTIONS_PER_GAME) break;
-                if (difficulty === 0 && q.total > 10) continue;
-                if (difficulty === 0 && q.people !== 2) continue;
-                if (difficulty !== 0 && q.total >= 15) continue;
-                if (difficulty !== 0 && (q.people < 2 || q.people > 6)) continue;
-                const k = q.total + '-' + q.people;
-                if (seen.has(k)) continue;
-                if (remainderMode === 0 && q.total % q.people !== 0) continue;
-                if (remainderMode === 1 && q.total % q.people === 0) continue;
-                seen.add(k);
-                list.push({ total: q.total, people: q.people });
-            }
-            return list;
-        }
-        const FOOD_NAME = { '🍎': '蘋果', '🌭': '熱狗', '🍬': '糖果', '🥟': '燒賣', '🍪': '曲奇' };
-        const PLATE_FACE_EMOJIS = ['👦', '👧', '🧒', '👨', '👩', '🧑', '👴', '👵'];
-        const PLATE_NAMES = ['偉聰', '詠欣', '志賢', '心悅', '柏康', '可晴', '心盈', '子俊'];
-        const UNITS = { '🍎': '個', '🌭': '個', '🍬': '粒', '🥟': '顆', '🍪': '塊' };
-
-        let currentRemainderMode = 0, currentFormulaMode = 0, currentDifficulty = 0;
-        let selectedFood = '🍎', selectedFoodName = '蘋果';
-        let currentQuestions = [], currentQuestionIndex = 0;
-        let totalItems = 0, numPeople = 0;
-        let currentTimeLimit = 60;
-        let countdownInterval = null, hasSubmitted = false;
-        let results = [];           // 儲存每題結果
-        let totalTimeUsed = 0;      // 總用時
-        let divisionInputListenersAttached = false;
-        let simpleShareListenersAttached = false;
-        let draggingFoodEl = null;
-        let pickedFoodEl = null;
-        let foodBoardListenersAttached = false;
-        let suppressFoodClickUntil = 0;
-
-        function isCoarsePointer() {
-            return window.matchMedia('(pointer: coarse)').matches;
-        }
-
-        function updateMoveHint() {
-            const el = document.getElementById('moveHint');
-            if (!el) return;
-            if (isCoarsePointer()) {
-                el.textContent = '';
-                el.classList.add('move-hint--hidden');
-            } else {
-                el.classList.remove('move-hint--hidden');
-                el.textContent = '💡 用滑鼠拖曳到任意盤子或食物堆；或先點食物再點目的地，也可快速移動。';
-            }
-        }
-
-        function syncTouchPickUi() {
-            const ga = document.getElementById('gameArea');
-            if (ga) ga.classList.toggle('touch-pick-mode', isCoarsePointer());
-            document.querySelectorAll('#gameArea .siumai-item').forEach(item => {
-                item.draggable = !isCoarsePointer();
-            });
-            updateMoveHint();
-        }
-
-        function clearPickedFood() {
-            document.querySelectorAll('.siumai-item.picked').forEach(el => el.classList.remove('picked'));
-            pickedFoodEl = null;
-        }
-
-        function clearDropzoneHighlight() {
-            document.querySelectorAll('.dropzone.dragover, .pile.dragover').forEach(z => z.classList.remove('dragover'));
-        }
-
-        function onFoodDragStart(ev) {
-            draggingFoodEl = ev.currentTarget;
-            try {
-                ev.dataTransfer.setData('text/plain', 'food');
-                ev.dataTransfer.effectAllowed = 'move';
-            } catch (e) { /* ignore */ }
-        }
-
-        function onFoodDragEnd() {
-            draggingFoodEl = null;
-            clearDropzoneHighlight();
-            suppressFoodClickUntil = Date.now() + 400;
-        }
-
-        function wireFoodItem(item) {
-            item.addEventListener('dragstart', onFoodDragStart);
-            item.addEventListener('dragend', onFoodDragEnd);
-            item.draggable = !isCoarsePointer();
-        }
-
-        function onGameAreaDragOver(ev) {
-            if (!draggingFoodEl || hasSubmitted) return;
-            ev.preventDefault();
-            try { ev.dataTransfer.dropEffect = 'move'; } catch (e) { /* ignore */ }
-            const zone = ev.target.closest('.dropzone, .pile');
-            if (!zone) return;
-            clearDropzoneHighlight();
-            zone.classList.add('dragover');
-        }
-
-        function onGameAreaDrop(ev) {
-            ev.preventDefault();
-            clearDropzoneHighlight();
-            if (hasSubmitted || !draggingFoodEl) return;
-            const zone = ev.target.closest('.dropzone, .pile');
-            if (!zone || !document.getElementById('gameArea').contains(draggingFoodEl)) return;
-            zone.appendChild(draggingFoodEl);
-            clearPickedFood();
-            updateCounts();
-        }
-
-        function onGameBoardClick(ev) {
-            if (hasSubmitted) return;
-            if (ev.target.closest('button, input, select, textarea, label')) return;
-            const item = ev.target.closest('.siumai-item');
-            if (item) {
-                if (Date.now() < suppressFoodClickUntil) return;
-                ev.preventDefault();
-                if (pickedFoodEl === item) {
-                    item.classList.remove('picked');
-                    pickedFoodEl = null;
-                } else {
-                    clearPickedFood();
-                    item.classList.add('picked');
-                    pickedFoodEl = item;
+        function syncActionButtons() {
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const isInputMode = currentMode !== 'easy';
+            if (!hasAnswered) {
+                nextBtn.style.display = 'none';
+                if (submitBtn) {
+                    submitBtn.style.display = isInputMode ? 'inline-block' : 'none';
                 }
+            } else {
+                nextBtn.style.display = 'inline-block';
+                nextBtn.disabled = false;
+                if (submitBtn) {
+                    submitBtn.style.display = 'none';
+                }
+            }
+        }
+
+        function applySnapshot(snap) {
+            currentTotal = snap.total;
+            currentPer = snap.per;
+            currentRemainder = snap.remainder;
+            correctQuotient = snap.quotient;
+            currentProduct = {
+                name: snap.product.name,
+                emoji: snap.product.emoji,
+                unit: snap.product.unit
+            };
+            currentMode = snap.modeAtAnswer;
+            pointsPerQuestion = pointsForMode(snap.modeAtAnswer);
+            document.getElementById('mode-name').textContent =
+                currentMode === 'easy' ? '簡單' : currentMode === 'medium' ? '中等' : '困難';
+            setStreakDisplay();
+        }
+
+        function setStreakDisplay() {
+            document.getElementById('streak').textContent = streak;
+            const suf = document.getElementById('streak-suffix');
+            if (suf) {
+                suf.style.display = currentMode === 'hard' ? 'none' : 'inline';
+            }
+        }
+
+        function setEndGameButtonVisible(show) {
+            const btn = document.getElementById('btn-end-game');
+            if (btn) btn.style.display = show ? 'inline-block' : 'none';
+        }
+
+        function recordAnswer(isCorrect) {
+            const answerText = currentRemainder > 0
+                ? `${currentTotal} ÷ ${currentPer} = ${correctQuotient} … ${currentRemainder}`
+                : `${currentTotal} ÷ ${currentPer} = ${correctQuotient}`;
+            const label = redoMode
+                ? `重做 ${redoIndex + 1} / ${redoQueue.length}`
+                : `第 ${questionCount} 題`;
+            questionHistory.push({
+                label,
+                total: currentTotal,
+                per: currentPer,
+                quotient: correctQuotient,
+                remainder: currentRemainder,
+                product: {
+                    name: currentProduct.name,
+                    emoji: currentProduct.emoji,
+                    unit: currentProduct.unit
+                },
+                correct: isCorrect,
+                modeAtAnswer: currentMode,
+                isRedo: redoMode,
+                answerText
+            });
+            if (redoMode && isCorrect) {
+                redoIndex++;
+            }
+        }
+
+        function getUniqueWrongQuestions() {
+            const seen = new Set();
+            const out = [];
+            for (const h of questionHistory) {
+                if (!h.correct) {
+                    const key = `${h.total}-${h.per}-${h.product.name}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        out.push(h);
+                    }
+                }
+            }
+            return out;
+        }
+
+        function renderHistoryList() {
+            const el = document.getElementById('history-list');
+            if (!el) return;
+            if (questionHistory.length === 0) {
+                el.innerHTML = '<div class="history-item">尚無紀錄</div>';
                 return;
             }
-            let zone = ev.target.closest('.dropzone, .pile');
-            if (!zone && pickedFoodEl) {
-                const plate = ev.target.closest('.plate');
-                if (plate) zone = plate.querySelector('.dropzone');
-            }
-            if (zone && pickedFoodEl) {
-                ev.preventDefault();
-                zone.appendChild(pickedFoodEl);
-                pickedFoodEl.classList.remove('picked');
-                pickedFoodEl = null;
-                updateCounts();
-            }
+            el.innerHTML = questionHistory.map(h => {
+                const cls = h.correct ? 'ok' : 'bad';
+                const icon = h.correct ? '✅' : '❌';
+                const shortQ = `有 ${h.total} ${h.product.unit} ${h.product.name}${h.product.emoji}，每 ${h.per} ${h.product.unit} 分成一份`;
+                return `<div class="history-item ${cls}"><strong>${icon} ${escapeHtml(h.label)}</strong><div class="meta">${escapeHtml(shortQ)}</div><div class="meta">正解：${escapeHtml(h.answerText)}</div></div>`;
+            }).join('');
         }
 
-        function ensureFoodBoardListeners() {
-            if (foodBoardListenersAttached) return;
-            foodBoardListenersAttached = true;
-            const ga = document.getElementById('gameArea');
-            ga.addEventListener('click', onGameBoardClick);
-            ga.addEventListener('dragover', onGameAreaDragOver, true);
-            ga.addEventListener('drop', onGameAreaDrop, true);
-            window.addEventListener('orientationchange', () => setTimeout(syncTouchPickUi, 250));
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
         }
 
-        function getSecondsLeftOnTimer() {
-            const n = parseInt(document.getElementById('timer').textContent, 10);
-            const cap = currentTimeLimit || 60;
-            return Number.isFinite(n) ? Math.max(0, Math.min(cap, n)) : cap;
+        function finishRedoSession() {
+            redoMode = false;
+            redoQueue = [];
+            redoIndex = 0;
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+            endGame();
         }
 
-        /**
-         * 兩部份皆對：100 分起算 + 速度加成最多 40（可超過 100，最高 140）。
-         * 未全對：只按正確比例給分（分配／第二部份各佔 50%），最高 50，不加速度分。
-         * 第二部份：有除式＝整條除式；沒除式＝「每人分得」或（有餘數時）「每人分得＋還餘」兩數皆對。
-         */
-        function questionScoreFromAccuracyParts(distCorrect, secondPartCorrect, timeUsedSec) {
-            const raw = (distCorrect ? 0.5 : 0) + (secondPartCorrect ? 0.5 : 0);
-            if (raw <= 0) return 0;
-            const limit = currentTimeLimit || 60;
-            const u = Math.min(limit, Math.max(0, timeUsedSec));
-            const speedRatio = limit > 0 ? 1 - u / limit : 0;
-            const speedBonusMax = 40;
-            if (raw >= 1) {
-                return Math.round(100 + speedBonusMax * speedRatio);
-            }
-            return Math.round(100 * raw);
+        function redoWrongQuestions() {
+            const wrongs = getUniqueWrongQuestions();
+            if (wrongs.length === 0) return;
+            redoQueue = wrongs.map(h => ({
+                total: h.total,
+                per: h.per,
+                remainder: h.remainder,
+                quotient: h.quotient,
+                product: {
+                    name: h.product.name,
+                    emoji: h.product.emoji,
+                    unit: h.product.unit
+                },
+                modeAtAnswer: h.modeAtAnswer
+            }));
+            redoMode = true;
+            redoIndex = 0;
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            setEndGameButtonVisible(true);
+            startNewQuestion();
         }
 
-        // ==================== Grade System ====================
-        /** 總平均可超過 100（全對愈快愈高分）；稱號門檻配合新制。 */
-        function getGrade(score) {
-            if (score >= 118) return { title: "分物大師", color: "#15803d" };
-            if (score >= 100) return { title: "分物之星", color: "#eab308" };
-            if (score >= 55) return { title: "分物小能手", color: "#f59e0b" };
-            return { title: "分物新手", color: "#0369a1" };
-        }
+        function startNewQuestion() {
+            hasAnswered = false;
 
-        function getGradeCriteria() {
-            return `
-                <strong>總分怎麼算？</strong><br>
-                顯示分數＝各題得分<strong>平均</strong>（可超過 100）。<br>
-                · <strong>兩部份都對</strong>（分配 + 除式或填寫）：該題先給 <strong>100 分</strong>，再加速度分最多 <strong>40 分</strong>（用時越短加成越高，該題最高 140 分）。<br>
-                · <strong>未全對</strong>：只按對錯比例給分（分配、第二部份各佔一半），最高 50 分，不加速度分。<br>
-                · <strong>沒有除式</strong>：無餘數題填「每人分得」；有餘數題須「每人分得」與「還餘」都對才算第二部份對。<br>
-                · <strong>有除式</strong>：須整條除式正確。<br><br>
-                <strong>稱號（配合可超過 100 的平均分）：</strong><br>
-                118 分以上 → 分物大師<br>
-                100–117 分 → 分物之星（至少代表整體已能穩定全對）<br>
-                55–99 分 → 分物小能手<br>
-                0–54 分 → 分物新手
-            `;
-        }
-
-        function distributionAnswerDescription() {
-            const unit = UNITS[selectedFood];
-            const correctQ = Math.floor(totalItems / numPeople);
-            const correctR = totalItems % numPeople;
-            const rem = currentRemainderMode === 1
-                ? (correctR > 0 ? `食物堆餘 <strong>${correctR}</strong>${unit}` : '食物堆餘數 <strong>0</strong>')
-                : '';
-            const remPhrase = currentRemainderMode === 1 ? `；${rem}` : '';
-            return `每人盤上 <strong>${correctQ}</strong>${unit}${remPhrase}。`;
-        }
-
-        function formulaCorrectAnswerPhrase() {
-            const correctQ = Math.floor(totalItems / numPeople);
-            const correctR = totalItems % numPeople;
-            if (currentRemainderMode === 1) {
-                return `<strong>${totalItems} ÷ ${numPeople} = ${correctQ} ··· ${correctR}</strong>`;
-            }
-            return `<strong>${totalItems} ÷ ${numPeople} = ${correctQ}</strong>`;
-        }
-
-        function correctAnswerFeedbackHtml() {
-            const unit = UNITS[selectedFood];
-            const correctQ = Math.floor(totalItems / numPeople);
-            const correctR = totalItems % numPeople;
-            const distBlock = `把 <strong>${totalItems}</strong>${unit}${selectedFoodName}平均分給 <strong>${numPeople}</strong> 人 → ${distributionAnswerDescription()}`;
-            if (currentFormulaMode === 1) {
-                return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 除式</strong><br>應為 ${formulaCorrectAnswerPhrase()}`;
-            }
-            if (currentRemainderMode === 1) {
-                return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 填寫</strong><br>每人分得 <strong>${correctQ}</strong>${unit}，還餘 <strong>${correctR}</strong>${unit}`;
-            }
-            return `正確參考：<br><br><strong>① 分配</strong><br>${distBlock}<br><br><strong>② 每人分得</strong><br>應填 <strong>${correctQ}</strong>${unit}`;
-        }
-
-        function wrongFeedbackHtml(distCorrect, formulaCorrect, shareCorrect, shareQCorrect, shareRCorrect) {
-            const parts = [];
-            const unit = UNITS[selectedFood];
-            const correctQ = Math.floor(totalItems / numPeople);
-            if (distCorrect) {
-                parts.push('<strong>① 分配</strong>：✅ 正確。');
-            } else {
-                parts.push(`<strong>① 分配</strong>：❌錯誤。應為${distributionAnswerDescription()}`);
-            }
-            if (currentFormulaMode === 1) {
-                if (formulaCorrect) {
-                    parts.push('<strong>② 除式</strong>：✅ 正確。');
-                } else {
-                    parts.push(`<strong>② 除式</strong>：❌錯誤。 應為 ${formulaCorrectAnswerPhrase()}`);
+            if (redoMode) {
+                if (redoIndex >= redoQueue.length) {
+                    finishRedoSession();
+                    return;
                 }
-            } else if (currentRemainderMode === 1) {
-                const correctR = totalItems % numPeople;
-                if (shareCorrect) {
-                    parts.push('<strong>② 每人分得／還餘</strong>：✅ 正確。');
+                applySnapshot(redoQueue[redoIndex]);
+                document.getElementById('question-num').textContent = `重做 ${redoIndex + 1} / ${redoQueue.length}`;
+                document.getElementById('score').textContent = totalScore;
+                document.getElementById('correct-count').textContent = correctCount;
+                setStreakDisplay();
+                document.getElementById('feedback').innerHTML = '';
+                document.getElementById('easy-choices').innerHTML = '';
+                document.getElementById('input-area').style.display = 'none';
+                document.getElementById('input-area').classList.remove('input-area--medium');
+
+                document.getElementById('total-show').textContent = currentTotal;
+                document.getElementById('product-show').innerHTML = `${currentProduct.name} ${currentProduct.emoji}`;
+                document.getElementById('per-show').textContent = currentPer;
+                document.getElementById('unit-show').textContent = currentProduct.unit;
+                document.getElementById('unit-show2').textContent = currentProduct.unit;
+
+                showGroupedObjects();
+
+                if (currentMode === 'easy') {
+                    showMultipleChoices();
                 } else {
-                    const bits = [];
-                    if (!shareQCorrect) bits.push(`每人分得應為 <strong>${correctQ}</strong>${unit}`);
-                    if (!shareRCorrect) bits.push(`還餘應為 <strong>${correctR}</strong>${unit}`);
-                    parts.push(`<strong>② 填寫</strong>：❌錯誤。 ${bits.join('；')}`);
+                    const inputArea = document.getElementById('input-area');
+                    inputArea.style.display = 'block';
+                    inputArea.classList.toggle('input-area--medium', currentMode === 'medium');
+                    const inputA = document.getElementById('input-a');
+                    const inputB = document.getElementById('input-b');
+                    const inputC = document.getElementById('input-c');
+                    inputA.value = '';
+                    inputB.value = '';
+                    inputC.value = '';
+                    const remWrap = document.getElementById('remainder-input-wrap');
+                    const inputR = document.getElementById('input-r');
+                    inputR.value = '';
+                    const hints = currentMode === 'medium'
+                        ? ['物件的數量', '每份的數量', '分成的份數', '餘下的數量']
+                        : ['', '', '', ''];
+                    [inputA, inputB, inputC, inputR].forEach((el, i) => {
+                        const t = hints[i];
+                        if (t) {
+                            el.setAttribute('placeholder', t);
+                            el.placeholder = t;
+                        } else {
+                            el.removeAttribute('placeholder');
+                            el.placeholder = '';
+                        }
+                    });
+                    if (currentRemainder > 0 && (currentMode === 'medium' || currentMode === 'hard')) {
+                        remWrap.style.display = 'inline-flex';
+                        remWrap.removeAttribute('hidden');
+                    } else {
+                        remWrap.style.display = 'none';
+                        remWrap.setAttribute('hidden', '');
+                    }
                 }
+                syncActionButtons();
+                return;
+            }
+
+            questionCount++;
+            document.getElementById('question-num').textContent = questionCount;
+            document.getElementById('score').textContent = totalScore;
+            document.getElementById('correct-count').textContent = correctCount;
+            setStreakDisplay();
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('easy-choices').innerHTML = '';
+            document.getElementById('input-area').style.display = 'none';
+            document.getElementById('input-area').classList.remove('input-area--medium');
+
+            currentProduct = supermarketProducts[Math.floor(Math.random() * supermarketProducts.length)];
+            const totals = [9, 12, 13, 15, 16, 17, 18, 20, 21, 22, 24, 25, 28, 30];
+            currentTotal = totals[Math.floor(Math.random() * totals.length)];
+            currentPer = Math.floor(Math.random() * 5) + 2;
+            correctQuotient = Math.floor(currentTotal / currentPer);
+            currentRemainder = currentTotal % currentPer;
+
+            // 更新問題文字
+            document.getElementById('total-show').textContent = currentTotal;
+            document.getElementById('product-show').innerHTML = `${currentProduct.name} ${currentProduct.emoji}`;
+            document.getElementById('per-show').textContent = currentPer;
+            document.getElementById('unit-show').textContent = currentProduct.unit;
+            document.getElementById('unit-show2').textContent = currentProduct.unit;
+
+            showGroupedObjects();
+
+            if (currentMode === 'easy') {
+                showMultipleChoices();
             } else {
-                if (shareCorrect) {
-                    parts.push('<strong>② 每人分得</strong>：✅ 正確。');
-                } else {
-                    parts.push(`<strong>② 每人分得</strong>：❌ 錯誤。應為 <strong>${correctQ}</strong>${unit}`);
-                }
-            }
-            return parts.join('<br><br>');
-        }
-
-        // ==================== Selection Functions ====================
-        function selectRemainder(m) { currentRemainderMode = m; updateActive('#remainderChoices', m); }
-        function selectFormula(m) { currentFormulaMode = m; updateActive('#formulaChoices', m); }
-        function selectDifficulty(m) {
-            currentDifficulty = m;
-            updateActive('#difficultyChoices', m);
-            updateDifficultyHint();
-        }
-
-        function updateDifficultyHint() {
-            const el = document.getElementById('difficultyHint');
-            if (!el) return;
-            const c = DIFFICULTY_CONFIG[currentDifficulty];
-            const capLine = currentDifficulty === 0
-                ? '食物總數最多 10 個。'
-                : '食物總數少於 15 個（最多 14 個）。';
-            const lines = [
-                `<strong>${c.label}</strong>：每題 ${c.time} 秒；人數 ${c.peopleMin === c.peopleMax ? c.peopleMin + ' 位' : c.peopleMin + '～' + c.peopleMax + ' 位（隨機）'}。`,
-                capLine,
-                c.showCounts ? '會顯示每盤食物的數量。' : '不顯示每盤食物的數量，請自己點數。'
-            ];
-            el.innerHTML = lines.join('<br>');
-        }
-
-        function updateActive(container, val) {
-            document.querySelectorAll(container + ' .choice-btn').forEach(btn => {
-                const btnVal = parseInt(btn.dataset.remainder || btn.dataset.formula || btn.dataset.diff);
-                btn.classList.toggle('active', btnVal === val);
-            });
-        }
-
-        function selectFood(el) {
-            document.querySelectorAll('.food-option').forEach(e => e.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedFood = el.getAttribute('data-food');
-            selectedFoodName = FOOD_NAME[selectedFood];
-            document.getElementById('startGameBtn').disabled = false;
-        }
-
-        function startGame() {
-            currentQuestions = buildQuestionList(currentDifficulty, currentRemainderMode);
-            currentQuestionIndex = 0;
-            results = [];
-            totalTimeUsed = 0;
-            divisionInputListenersAttached = false;
-            simpleShareListenersAttached = false;
-            document.getElementById('setupPanel').style.display = 'none';
-            document.getElementById('gameArea').style.display = 'flex';
-            document.body.classList.add('game-active');
-            document.getElementById('timer').style.background = '';
-            if (currentFormulaMode === 1) {
-                document.getElementById('divisionArea').style.display = 'block';
-                document.getElementById('simpleShareArea').style.display = 'none';
-            } else {
-                document.getElementById('divisionArea').style.display = 'none';
-                document.getElementById('simpleShareArea').style.display = 'block';
-            }
-            ensureFoodBoardListeners();
-            syncTouchPickUi();
-            loadCurrentQuestion();
-        }
-
-        function loadCurrentQuestion() {
-            const q = currentQuestions[currentQuestionIndex];
-            totalItems = q.total;
-            numPeople = q.people;
-
-            const dcfg = DIFFICULTY_CONFIG[currentDifficulty];
-            currentTimeLimit = dcfg.time;
-            document.getElementById('gameArea').classList.toggle('hide-counts-mode', !dcfg.showCounts);
-
-            document.getElementById('questionBox').innerHTML = `把 <strong>${totalItems}</strong> ${UNITS[selectedFood]}${selectedFoodName}平均分給 <strong>${numPeople}</strong> 位朋友。`;
-            document.getElementById('pileTitle').textContent = selectedFoodName;
-            document.getElementById('currentQ').textContent = currentQuestionIndex + 1;
-
-            resetGameBoard();
-            startTimer();
-            if (currentFormulaMode === 1) setupDivisionArea();
-            else setupSimpleShareArea();
-
-            hasSubmitted = false;
-            document.getElementById('submitBtn').style.display = 'inline-block';
-            document.getElementById('nextBtn').style.display = 'none';
-            document.getElementById('hintBtn').style.display = 'none';
-            document.getElementById('resetBtn').style.display = 'inline-block';
-        }
-
-        function resetGameBoard(hideFeedback = true) {
-            draggingFoodEl = null;
-            clearPickedFood();
-            clearDropzoneHighlight();
-            const pile = document.getElementById('pile');
-            pile.innerHTML = '';
-            for (let i = 0; i < totalItems; i++) {
-                const item = document.createElement('div');
-                item.className = 'siumai-item';
-                item.textContent = selectedFood;
-                wireFoodItem(item);
-                pile.appendChild(item);
-            }
-            createPlates();
-            if (hideFeedback) document.getElementById('feedback').style.display = 'none';
-        }
-
-        function createPlates() {
-            const container = document.getElementById('platesContainer');
-            container.innerHTML = '';
-            for (let i = 1; i <= numPeople; i++) {
-                const face = PLATE_FACE_EMOJIS[(i - 1) % PLATE_FACE_EMOJIS.length];
-                const pname = PLATE_NAMES[(i - 1) % PLATE_NAMES.length];
-                container.innerHTML += `
-                    <div class="plate" aria-label="第 ${i} 位 ${pname}">
-                        <div class="plate-label">
-                            <span class="plate-face" aria-hidden="true">${face}</span>
-                            <span class="plate-label-text">${pname}</span>
-                        </div>
-                        <div id="plate-${i}" class="dropzone"></div>
-                        <div class="count" id="count-${i}">0</div>
-                    </div>`;
-            }
-        }
-
-        function updateCounts() {
-            for (let i = 1; i <= numPeople; i++) {
-                const countEl = document.getElementById('count-' + i);
-                const plate = document.getElementById('plate-' + i);
-                if (countEl && plate) countEl.textContent = plate.children.length;
-            }
-            const badge = document.getElementById('pileCountBadge');
-            const pile = document.getElementById('pile');
-            if (badge && pile) badge.textContent = pile.children.length;
-        }
-
-        function resetDistribution() { resetGameBoard(); }
-
-        function setupDivisionArea() {
-            ['totalInput', 'peopleInput', 'quotientInput', 'remainderInput'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
-            });
-            if (!divisionInputListenersAttached) {
-                divisionInputListenersAttached = true;
-                ['totalInput', 'peopleInput', 'quotientInput', 'remainderInput'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.addEventListener('input', () => { if (el.value < 0) el.value = 0; });
-                        el.addEventListener('keydown', e => { if (e.key === '-' || e.key === 'e') e.preventDefault(); });
+                const inputArea = document.getElementById('input-area');
+                inputArea.style.display = 'block';
+                inputArea.classList.toggle('input-area--medium', currentMode === 'medium');
+                const inputA = document.getElementById('input-a');
+                const inputB = document.getElementById('input-b');
+                const inputC = document.getElementById('input-c');
+                inputA.value = '';
+                inputB.value = '';
+                inputC.value = '';
+                const remWrap = document.getElementById('remainder-input-wrap');
+                const inputR = document.getElementById('input-r');
+                inputR.value = '';
+                const hints = currentMode === 'medium'
+                    ? ['物件的數量', '每份的數量', '分成的份數', '餘下的數量']
+                    : ['', '', '', ''];
+                [inputA, inputB, inputC, inputR].forEach((el, i) => {
+                    const t = hints[i];
+                    if (t) {
+                        el.setAttribute('placeholder', t);
+                        el.placeholder = t;
+                    } else {
+                        el.removeAttribute('placeholder');
+                        el.placeholder = '';
                     }
                 });
-            }
-            document.getElementById('remainderPart').style.display = currentRemainderMode === 1 ? 'flex' : 'none';
-            const hintEl = document.getElementById('divisionFormulaHint');
-            if (hintEl) {
-                if (currentDifficulty === 0) {
-                    hintEl.style.display = 'block';
-                    hintEl.textContent = currentRemainderMode === 1
-                        ? '物件的總數量 ÷ 平均分成的份數量 = 每份的數量 …… 餘數'
-                        : '物件的總數量 ÷ 平均分成的份數量 = 每份的數量';
+                if (currentRemainder > 0 && (currentMode === 'medium' || currentMode === 'hard')) {
+                    remWrap.style.display = 'inline-flex';
+                    remWrap.removeAttribute('hidden');
                 } else {
-                    hintEl.style.display = 'none';
-                    hintEl.textContent = '';
+                    remWrap.style.display = 'none';
+                    remWrap.setAttribute('hidden', '');
                 }
             }
+            syncActionButtons();
         }
 
-        function setupSimpleShareArea() {
-            const withRem = currentRemainderMode === 1;
-            const lblSingle = document.getElementById('simpleShareLabelSingle');
-            const lblQ = document.getElementById('simpleShareLabelQuotient');
-            const conn = document.getElementById('simpleShareRemConnector');
-            const remWrap = document.getElementById('simpleRemainderInputWrap');
-            const remUnit = document.getElementById('simpleRemainderUnit');
-            if (lblSingle) lblSingle.style.display = withRem ? 'none' : '';
-            if (lblQ) lblQ.style.display = withRem ? '' : 'none';
-            if (conn) conn.style.display = withRem ? '' : 'none';
-            if (remWrap) remWrap.style.display = withRem ? '' : 'none';
-            if (remUnit) remUnit.style.display = withRem ? '' : 'none';
+        function showGroupedObjects() {
+            const display = document.getElementById('objects-display');
+            let html = '';
+            const groups = Math.floor(currentTotal / currentPer);
 
-            const unit = UNITS[selectedFood] || '';
-            const unitEl = document.getElementById('eachShareUnit');
-            if (unitEl) unitEl.textContent = unit;
-            if (remUnit) remUnit.textContent = unit;
-
-            const inp = document.getElementById('eachShareInput');
-            const remInp = document.getElementById('simpleRemainderInput');
-            if (inp) inp.value = '';
-            if (remInp) remInp.value = '';
-
-            if (!simpleShareListenersAttached) {
-                simpleShareListenersAttached = true;
-                const bindNum = (el) => {
-                    if (!el) return;
-                    el.addEventListener('input', () => { if (el.value < 0) el.value = 0; });
-                    el.addEventListener('keydown', e => { if (e.key === '-' || e.key === 'e') e.preventDefault(); });
-                };
-                bindNum(inp);
-                bindNum(remInp);
+            // 顯示完整的組
+            for (let i = 0; i < groups; i++) {
+                html += `<div class="group">`;
+                for (let j = 0; j < currentPer; j++) {
+                    html += currentProduct.emoji;
+                }
+                html += `</div>`;
             }
+
+            // 顯示剩餘的物品（僅排列圖示）
+            if (currentRemainder > 0) {
+                html += `<div class="remainder">`;
+                for (let k = 0; k < currentRemainder; k++) {
+                    html += currentProduct.emoji;
+                }
+                html += `</div>`;
+            }
+
+            display.innerHTML = html;
         }
 
-        function startTimer() {
-            if (countdownInterval) clearInterval(countdownInterval);
-            let timeLeft = currentTimeLimit || 60;
-            const timerEl = document.getElementById('timer');
-            timerEl.style.background = '#fee2e2';
-            timerEl.textContent = timeLeft + ' 秒';
-            countdownInterval = setInterval(() => {
-                timeLeft--;
-                timerEl.textContent = timeLeft + ' 秒';
-                if (timeLeft <= 10) timerEl.style.background = '#fecaca';
-                else timerEl.style.background = '#fee2e2';
-                if (timeLeft <= 0) submitAnswer(true);
-            }, 1000);
-        }
+        function showMultipleChoices() {
+            const choicesDiv = document.getElementById('easy-choices');
+            const a = currentTotal, b = currentPer, c = correctQuotient, r = currentRemainder;
 
-        /** 展示答案：每人盤上 correctQ 個，其餘 correctR 個留在食物堆（原盒） */
-        function distributeItemsForCorrectAnswer() {
-            const pile = document.getElementById('pile');
-            if (!pile) return;
-            const correctQ = Math.floor(totalItems / numPeople);
-            for (let p = 1; p <= numPeople; p++) {
-                const plate = document.getElementById('plate-' + p);
-                if (!plate) continue;
-                for (let j = 0; j < correctQ; j++) {
-                    const first = pile.firstElementChild;
-                    if (first) plate.appendChild(first);
+            const correctStr = r > 0
+                ? `${a} ÷ ${b} = ${c} … ${r}`
+                : `${a} ÷ ${b} = ${c}`;
+
+            const wrongCandidates = [
+                `${b} ÷ ${a} = ${c}`,
+                `${a} ÷ ${c} = ${b}`,
+                `${a} ÷ ${b} = ${c + 1}`,
+                `${a} ÷ ${b} = ${c + 2}`,
+                c > 1 ? `${a} ÷ ${b} = ${c - 1}` : null,
+                `${b} ÷ ${a} = ${c + 1}`,
+                `${a + 1} ÷ ${b} = ${c}`,
+                `${a} ÷ ${b + 1} = ${c}`
+            ].filter(Boolean);
+
+            const remainderWrongs = [];
+            if (r > 0) {
+                for (let k = 1; k < b; k++) {
+                    if (k !== r) {
+                        remainderWrongs.push(`${a} ÷ ${b} = ${c} … ${k}`);
+                    }
+                }
+                if (remainderWrongs.length === 0 && c > 1) {
+                    const s = `${a} ÷ ${b} = ${c - 1} … 1`;
+                    if (s !== correctStr) remainderWrongs.push(s);
+                }
+                if (remainderWrongs.length === 0) {
+                    const s = `${a} ÷ ${b} = ${c + 1} … 1`;
+                    if (s !== correctStr) remainderWrongs.push(s);
                 }
             }
-            updateCounts();
-        }
+            wrongCandidates.push(...remainderWrongs);
 
-        function showAnswer() {
-            const correctQ = Math.floor(totalItems / numPeople);
-            const correctR = totalItems % numPeople;
-            if (currentFormulaMode === 1) {
-                document.getElementById('totalInput').value = totalItems;
-                document.getElementById('peopleInput').value = numPeople;
-                document.getElementById('quotientInput').value = correctQ;
-                if (currentRemainderMode === 1) document.getElementById('remainderInput').value = correctR;
-            } else {
-                const es = document.getElementById('eachShareInput');
-                if (es) es.value = correctQ;
-                const sr = document.getElementById('simpleRemainderInput');
-                if (currentRemainderMode === 1 && sr) sr.value = correctR;
+            const seen = new Set([correctStr]);
+            const wrongUnique = [];
+            for (const s of wrongCandidates) {
+                if (!seen.has(s)) {
+                    seen.add(s);
+                    wrongUnique.push(s);
+                }
             }
-            resetGameBoard(false);
-            distributeItemsForCorrectAnswer();
-            if (hasSubmitted) {
-                const fb = document.getElementById('feedback');
-                fb.classList.add('feedback-expanded');
-                fb.innerHTML = correctAnswerFeedbackHtml();
-                fb.style.display = 'block';
-                fb.style.background = '#fee2e2';
-                fb.style.color = '#b91c1c';
-            }
-        }
-
-        function submitAnswer(isTimeout = false) {
-            if (hasSubmitted) return;
-            hasSubmitted = true;
-            clearPickedFood();
-            clearDropzoneHighlight();
-            if (countdownInterval) clearInterval(countdownInterval);
-
-            const timeUsedThisQ = (currentTimeLimit || 60) - getSecondsLeftOnTimer();
-            totalTimeUsed += timeUsedThisQ;
-
-            const correctQ = Math.floor(totalItems / numPeople);
-            const correctR = totalItems % numPeople;
-
-            let distCorrect = document.getElementById('pile').children.length === correctR;
-            for (let i = 1; i <= numPeople; i++) {
-                if (document.getElementById('plate-' + i).children.length !== correctQ) distCorrect = false;
+            let pad = 1;
+            while (wrongUnique.length < 2 && pad < 30) {
+                const s = `${a} ÷ ${b} = ${c + 2 + pad}`;
+                if (!seen.has(s)) {
+                    seen.add(s);
+                    wrongUnique.push(s);
+                }
+                pad++;
             }
 
-            let formulaCorrect = true;
-            let shareCorrect = true;
-            let shareQCorrect = true;
-            let shareRCorrect = true;
-            if (currentFormulaMode === 1) {
-                const stuT = parseInt(document.getElementById('totalInput').value) || 0;
-                const stuP = parseInt(document.getElementById('peopleInput').value) || 0;
-                const stuQ = parseInt(document.getElementById('quotientInput').value) || 0;
-                const stuR = currentRemainderMode === 1 ? parseInt(document.getElementById('remainderInput').value) || 0 : 0;
-                if (stuT !== totalItems || stuP !== numPeople || stuQ !== correctQ || (currentRemainderMode === 1 && stuR !== correctR)) {
-                    formulaCorrect = false;
+            let pickedWrong = [];
+            if (r > 0 && remainderWrongs.length >= 2) {
+                const sh = [...remainderWrongs].sort(() => Math.random() - 0.5);
+                pickedWrong = sh.slice(0, 2);
+            } else if (r > 0 && remainderWrongs.length === 1) {
+                pickedWrong.push(remainderWrongs[0]);
+                const nonRem = wrongUnique.find(s => !s.includes('…'));
+                if (nonRem) {
+                    pickedWrong.push(nonRem);
+                } else {
+                    let p = 1;
+                    while (pickedWrong.length < 2 && p < 30) {
+                        const s = `${a} ÷ ${b} = ${c + 2 + p}`;
+                        if (!pickedWrong.includes(s) && s !== correctStr) {
+                            pickedWrong.push(s);
+                            break;
+                        }
+                        p++;
+                    }
                 }
             } else {
-                const stuQ = parseInt(document.getElementById('eachShareInput').value, 10);
-                shareQCorrect = Number.isFinite(stuQ) && stuQ === correctQ;
-                if (currentRemainderMode === 1) {
-                    const stuR = parseInt(document.getElementById('simpleRemainderInput').value, 10);
-                    shareRCorrect = Number.isFinite(stuR) && stuR === correctR;
-                } else {
-                    shareRCorrect = true;
-                }
-                shareCorrect = shareQCorrect && shareRCorrect;
+                wrongUnique.sort(() => Math.random() - 0.5);
+                pickedWrong = wrongUnique.slice(0, 2);
             }
 
-            const secondOk = currentFormulaMode === 1 ? formulaCorrect : shareCorrect;
-            const isCorrect = distCorrect && secondOk;
-            const questionScore = questionScoreFromAccuracyParts(distCorrect, secondOk, timeUsedThisQ);
+            while (pickedWrong.length < 2) {
+                const fallback = wrongUnique.find(s => !pickedWrong.includes(s));
+                if (fallback) pickedWrong.push(fallback);
+                else break;
+            }
 
-            results.push({
-                qNum: currentQuestionIndex + 1,
-                isCorrect: isCorrect,
-                distCorrect: distCorrect,
-                formulaCorrect: currentFormulaMode === 1 ? formulaCorrect : null,
-                shareAnswerCorrect: currentFormulaMode === 0 ? shareCorrect : null,
-                correctQ: correctQ,
-                correctR: correctR,
-                timeUsed: timeUsedThisQ,
-                questionScore: questionScore
+            let opts = [correctStr, ...pickedWrong].sort(() => Math.random() - 0.5);
+
+            opts.forEach(text => {
+                const isCorrect = text === correctStr;
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = text;
+                btn.onclick = () => handleAnswer(isCorrect, btn, text);
+                choicesDiv.appendChild(btn);
             });
+        }
 
-            const fb = document.getElementById('feedback');
-            const unit = UNITS[selectedFood];
+        function handleAnswer(isCorrect, btnElement, text) {
+            if (hasAnswered) return;
+            hasAnswered = true;
 
-            fb.classList.remove('feedback-expanded');
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
             if (isCorrect) {
-                fb.style.background = '#d1fae5';
-                fb.style.color = '#166534';
-                if (currentFormulaMode === 1) {
-                    fb.innerHTML = `🎉 太棒了！分配與除式都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}${currentRemainderMode === 1 ? (correctR > 0 ? `，餘${correctR}${unit}` : '，餘數 0') : ''}`;
-                } else if (currentRemainderMode === 1) {
-                    fb.innerHTML = `🎉 太棒了！分配與填寫都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}，還餘 ${correctR}${unit}`;
-                } else {
-                    fb.innerHTML = `🎉 太棒了！分配與「每人分得」都正確！<br>把${totalItems}${unit}${selectedFoodName}平均分給${numPeople}人，每人分得 ${correctQ}${unit}`;
+                btnElement.classList.add('correct');
+                document.getElementById('feedback').innerHTML = `✅ 正確！<br><strong>${text}</strong>`;
+                document.getElementById('feedback').style.color = '#32cd32';
+                if (!redoMode) {
+                    totalScore += pointsPerQuestion;
+                    correctCount++;
                 }
-                document.getElementById('hintBtn').style.display = 'none';
+                if (!redoMode) streak++;
             } else {
-                fb.style.background = '#fee2e2';
-                fb.style.color = '#b91c1c';
-                fb.classList.add('feedback-expanded');
-                fb.innerHTML = wrongFeedbackHtml(distCorrect, formulaCorrect, shareCorrect, shareQCorrect, shareRCorrect);
-                document.getElementById('hintBtn').style.display = 'inline-block';
+                btnElement.classList.add('wrong');
+                const correctText = currentRemainder > 0
+                    ? `${currentTotal} ÷ ${currentPer} = ${correctQuotient} … ${currentRemainder}`
+                    : `${currentTotal} ÷ ${currentPer} = ${correctQuotient}`;
+                document.getElementById('feedback').innerHTML = `❌ 正確答案是 <strong>${correctText}</strong>`;
+                document.getElementById('feedback').style.color = '#ff6347';
+                if (!redoMode) streak = 0;
+            }
+            recordAnswer(isCorrect);
+            syncActionButtons();
+            updateUI();
+        }
+
+        function checkInput() {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const a = parseInt(document.getElementById('input-a').value) || 0;
+            const b = parseInt(document.getElementById('input-b').value) || 0;
+            const c = parseInt(document.getElementById('input-c').value) || 0;
+            const r = parseInt(document.getElementById('input-r').value) || 0;
+            const remWrap = document.getElementById('remainder-input-wrap');
+            const remainderRequired = currentRemainder > 0 && (currentMode === 'medium' || currentMode === 'hard')
+                && remWrap.style.display !== 'none' && !remWrap.hasAttribute('hidden');
+
+            let isAllCorrect = (a === currentTotal && b === currentPer && c === correctQuotient);
+            if (remainderRequired) {
+                isAllCorrect = isAllCorrect && (r === currentRemainder);
             }
 
-            fb.style.display = 'block';
-            document.getElementById('submitBtn').style.display = 'none';
-            document.getElementById('resetBtn').style.display = 'none';
-            document.getElementById('nextBtn').style.display = 'inline-block';
+            if (isAllCorrect) {
+                const correctText = currentRemainder > 0
+                    ? `${currentTotal} ÷ ${currentPer} = ${correctQuotient} … ${currentRemainder}`
+                    : `${currentTotal} ÷ ${currentPer} = ${correctQuotient}`;
+
+                document.getElementById('feedback').innerHTML = `✅ 太棒了！正確！<br><strong>${correctText}</strong>`;
+                document.getElementById('feedback').style.color = '#32cd32';
+                if (!redoMode) {
+                    totalScore += pointsPerQuestion;
+                    correctCount++;
+                }
+                if (!redoMode) streak++;
+            } else {
+                const correctText = currentRemainder > 0
+                    ? `${currentTotal} ÷ ${currentPer} = ${correctQuotient} … ${currentRemainder}`
+                    : `${currentTotal} ÷ ${currentPer} = ${correctQuotient}`;
+
+                document.getElementById('feedback').innerHTML = `❌ 答案不完全正確<br>正確答案是 <strong>${correctText}</strong>`;
+                document.getElementById('feedback').style.color = '#ff6347';
+                if (!redoMode) streak = 0;
+            }
+            recordAnswer(isAllCorrect);
+            syncActionButtons();
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = totalScore;
+            document.getElementById('correct-count').textContent = correctCount;
+            setStreakDisplay();
+        }
+
+        function checkStreakUpgrade() {
+            if (streak >= 5) {
+                if (currentMode === 'easy') {
+                    currentMode = 'medium';
+                    pointsPerQuestion = 20;
+                    streak = 0;
+                } else if (currentMode === 'medium') {
+                    currentMode = 'hard';
+                    pointsPerQuestion = 30;
+                    streak = 0;
+                }
+                // 困難模式：已達最高等級，連續答對數不歸零，繼續累加
+                document.getElementById('mode-name').textContent =
+                    currentMode === 'easy' ? '簡單' : currentMode === 'medium' ? '中等' : '困難';
+                setStreakDisplay();
+            }
         }
 
         function nextQuestion() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex >= currentQuestions.length) {
-                showFinalResult();
-            } else {
-                loadCurrentQuestion();
+            if (redoMode) {
+                startNewQuestion();
+                return;
             }
+            checkStreakUpgrade();
+            startNewQuestion();
         }
 
-        function showFinalResult() {
-            document.getElementById('gameArea').style.display = 'none';
-            document.body.classList.remove('game-active');
-            const resultPanel = document.getElementById('resultPanel');
-            resultPanel.style.display = 'block';
-
-            const n = results.length;
-            const correctCount = results.filter(r => r.isCorrect).length;
-            const score = n ? Math.round(results.reduce((s, r) => s + r.questionScore, 0) / n) : 0;
-            const sumTime = results.reduce((s, r) => s + r.timeUsed, 0);
-            const avgTime = n ? Math.round((sumTime / n) * 10) / 10 : 0;
-
-            document.getElementById('scoreCircle').textContent = score;
-            const circle = document.getElementById('scoreCircle');
-            circle.style.borderColor = score >= 118 ? '#15803d' : (score >= 100 ? '#22c55e' : '#f59e0b');
-
-            const grade = getGrade(score);
-            const gradeEl = document.getElementById('gradeTitle');
-            gradeEl.innerHTML = `
-                ${grade.title}
-                <span class="tooltip" tabindex="0" role="button" aria-label="評分說明">
-                    <span style="font-size:1.35rem;">ℹ️</span>
-                    <span class="tooltiptext">${getGradeCriteria()}</span>
-                </span>
-            `;
-            gradeEl.style.color = grade.color;
-
-            const dcfg = DIFFICULTY_CONFIG[currentDifficulty];
-            const remLabel = currentRemainderMode === 1 ? '有餘數' : '沒有餘數';
-            const formLabel = currentFormulaMode === 1 ? '有除式' : '沒有除式';
-            const modeEl = document.getElementById('resultModeSummary');
-            if (modeEl) {
-                modeEl.innerHTML =
-                    '<strong>本局設定</strong>' +
-                    '<p class="result-mode-line">餘數模式：<strong>' + remLabel + '</strong>　' +
-                    '除式模式：<strong>' + formLabel + '</strong>　' +
-                    '難度：<strong>' + dcfg.label + '</strong></p>' +
-                    '<p class="result-mode-line">食物：<strong>' + selectedFood + ' ' + selectedFoodName + '</strong></p>';
+        function endGame() {
+            if (!redoMode && sessionSnapshot === null) {
+                sessionSnapshot = {
+                    total: questionCount,
+                    correct: correctCount,
+                    score: totalScore
+                };
             }
 
-            document.getElementById('totalTime').textContent = totalTimeUsed;
-            document.getElementById('timeCapLabel').textContent = dcfg.time;
+            const totalQuestions = sessionSnapshot ? sessionSnapshot.total : questionCount;
+            const correctForRate = sessionSnapshot ? sessionSnapshot.correct : correctCount;
+            const percent = totalQuestions > 0 ? Math.round((correctForRate / totalQuestions) * 100) : 0;
 
-            const breakdownExtra = currentFormulaMode === 1
-                ? '有除式：全對則 100 分＋速度最多 40；未全對則依分配／除式對錯比例給分（各半），不加速度分。'
-                : (currentRemainderMode === 1
-                    ? '沒除式（有餘數）：全對則 100＋速度最多 40；未全對則依分配與「每人分得＋還餘」對錯比例給分，不加速度分。'
-                    : '沒除式：全對則 100＋速度最多 40；未全對則依分配與「每人分得」對錯比例給分，不加速度分。');
-            document.getElementById('scoreBreakdown').innerHTML =
-                `「全對」<strong>${correctCount}</strong> / ${n} 題 · 平均每題用時 <strong>${avgTime}</strong> 秒<br>` +
-                `${breakdownExtra}`;
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
 
-            let listHTML = '';
-            results.forEach(r => {
-                let formulaMeta = '';
-                if (currentFormulaMode === 1 && r.formulaCorrect !== null) {
-                    formulaMeta = `<span class="result-dim">分配 ${r.distCorrect ? '✅' : '❌'} · 除式 ${r.formulaCorrect ? '✅' : '❌'}</span>`;
-                } else if (currentFormulaMode === 0 && r.shareAnswerCorrect !== null && r.shareAnswerCorrect !== undefined) {
-                    formulaMeta = `<span class="result-dim">分配 ${r.distCorrect ? '✅' : '❌'} · 每人分得 ${r.shareAnswerCorrect ? '✅' : '❌'}</span>`;
-                }
-                listHTML += `
-                    <div class="result-item">
-                        <span>第 ${r.qNum} 題</span>
-                        <span class="${r.isCorrect ? 'correct' : 'wrong'}">
-                            ${r.isCorrect ? '✅ 全對' : '❌ 未全對'}
-                            <span class="result-item-meta">${r.questionScore} 分 · 用時 ${r.timeUsed} 秒${formulaMeta}</span>
-                        </span>
-                    </div>`;
-            });
-            document.getElementById('resultList').innerHTML = listHTML;
-            window.scrollTo(0, 0);
+            document.getElementById('final-score').textContent = totalScore;
+            document.getElementById('final-correct').textContent = correctForRate;
+            document.getElementById('final-total').textContent = totalQuestions;
+            document.getElementById('final-percent').textContent = percent + '%';
+
+            let grade = '';
+            if (percent >= 85) grade = '🌟 非常優秀！你已經是超級市場包裝小高手了！';
+            else if (percent >= 70) grade = '👍 很棒！繼續保持～';
+            else if (percent >= 50) grade = '🙂 表現不錯，多練習會更好';
+            else grade = '💪 再加油！多練習幾次一定會進步很多！';
+
+            document.getElementById('final-grade').innerHTML = grade;
+
+            renderHistoryList();
+            const btnRedo = document.getElementById('btn-redo-wrong');
+            if (btnRedo) {
+                btnRedo.style.display = getUniqueWrongQuestions().length > 0 ? 'inline-block' : 'none';
+            }
+            setEndGameButtonVisible(false);
         }
 
         function restartGame() {
-            location.reload();
+            totalScore = 0;
+            questionCount = 0;
+            correctCount = 0;
+            streak = 0;
+            currentMode = 'easy';
+            pointsPerQuestion = 10;
+            hasAnswered = false;
+            questionHistory = [];
+            sessionSnapshot = null;
+            redoMode = false;
+            redoQueue = [];
+            redoIndex = 0;
+
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('mode-name').textContent = '簡單';
+            setEndGameButtonVisible(true);
+            startNewQuestion();
         }
 
-        window.onload = () => {
-            document.querySelector('.food-option').classList.add('selected');
-            document.getElementById('startGameBtn').disabled = false;
-            const cap = document.getElementById('timeCapLabel');
-            if (cap) cap.textContent = DIFFICULTY_CONFIG[currentDifficulty].time;
-            updateDifficultyHint();
+        // 開始遊戲
+        window.onload = function () {
+            startNewQuestion();
         };
     </script>
 </body>
